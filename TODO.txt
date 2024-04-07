@@ -1,0 +1,3 @@
+Next:
+1 - Adapt .ts script to deploy stablecoin and test some functionalities - OK
+2 - Create DSCEngine contract

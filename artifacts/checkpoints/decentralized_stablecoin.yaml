@@ -1,0 +1,18 @@
+default:
+  deployInfo:
+    codeId: 19
+    contractCodeHash: not_required
+    deployTimestamp: Tue Jan 16 2024 08:04:34 GMT+0000 (GMT)
+  instantiateInfo:
+    - instantiateTag: default_instantiate
+      contractAddress: neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj
+      instantiateTimestamp: Tue Jan 16 2024 08:04:34 GMT+0000 (GMT)
+mainnet:
+  deployInfo:
+    codeId: 692
+    contractCodeHash: not_required
+    deployTimestamp: Sun Jan 28 2024 10:33:45 GMT+0000 (GMT)
+  instantiateInfo:
+    - instantiateTag: default_instantiate
+      contractAddress: neutron1wg6ej9sjhsgpk4adaje0d3nmasg69sm2k9xjug2x7mrfkzeg6ywqwqmkw7
+      instantiateTimestamp: Sun Jan 28 2024 10:33:46 GMT+0000 (GMT)
