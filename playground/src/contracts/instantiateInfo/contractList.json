@@ -1,0 +1,14 @@
+{
+  "decentralized_stablecoin": {
+    "default": {
+      "chainId": "testing-1",
+      "codeId": 19,
+      "contractAddress": "neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj"
+    },
+    "mainnet": {
+      "chainId": "neutron-1",
+      "codeId": 692,
+      "contractAddress": "neutron1wg6ej9sjhsgpk4adaje0d3nmasg69sm2k9xjug2x7mrfkzeg6ywqwqmkw7"
+    }
+  }
+}

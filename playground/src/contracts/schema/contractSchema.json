@@ -1,0 +1,804 @@
+{
+  "SampleProjectContract": {
+    "schemaData": [
+      {
+        "kind": "interface",
+        "name": "Constants",
+        "properties": [
+          {
+            "name": "count",
+            "type": "number"
+          },
+          {
+            "name": "owner",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "CountResponse",
+        "properties": [
+          {
+            "name": "count",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "ExecuteMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  increment: {\n    [k: string]: unknown;\n  };\n} | {\n  reset: {\n    count: number;\n    [k: string]: unknown;\n  };\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InstantiateMsg",
+        "properties": [
+          {
+            "name": "count",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "QueryMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  get_count: {\n    [k: string]: unknown;\n  };\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "SampleProjectReadOnlyInterface",
+        "properties": [
+          {
+            "name": "getCount",
+            "type": "() => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "SampleProjectQueryContract",
+        "properties": [
+          {
+            "name": "getCount",
+            "type": "unknown"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "SampleProjectInterface",
+        "properties": [
+          {
+            "name": "increment",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }) => Promise<any>"
+          },
+          {
+            "name": "reset",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    count\n  }: {\n    count: number;\n  }) => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "SampleProjectContract",
+        "properties": [
+          {
+            "name": "increment",
+            "type": "unknown"
+          },
+          {
+            "name": "reset",
+            "type": "unknown"
+          }
+        ]
+      }
+    ]
+  },
+  "NeutronVotingRegistryContract": {
+    "schemaData": [
+      {
+        "kind": "typeAlias",
+        "name": "ExecuteMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  add_voting_vault: {\n    new_voting_vault_contract: string;\n    [k: string]: unknown;\n  };\n} | {\n  remove_voting_vault: {\n    old_voting_vault_contract: string;\n    [k: string]: unknown;\n  };\n} | {\n  update_config: {\n    owner: string;\n    [k: string]: unknown;\n  };\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InstantiateMsg",
+        "properties": [
+          {
+            "name": "owner",
+            "type": "string"
+          },
+          {
+            "name": "voting_vaults",
+            "type": "string[]"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "QueryMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  dao: {};\n} | {\n  config: {};\n} | {\n  voting_vaults: {};\n} | {\n  voting_power_at_height: {\n    address: string;\n    height?: number | null;\n  };\n} | {\n  total_power_at_height: {\n    height?: number | null;\n  };\n} | {\n  info: {};\n}"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Addr",
+        "properties": [
+          {
+            "name": "type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "Config",
+        "properties": [
+          {
+            "name": "owner",
+            "type": "Addr"
+          },
+          {
+            "name": "voting_vaults",
+            "type": "Addr[]"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InfoResponse",
+        "properties": [
+          {
+            "name": "info",
+            "type": "ContractVersion"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "ContractVersion",
+        "properties": [
+          {
+            "name": "contract",
+            "type": "string"
+          },
+          {
+            "name": "version",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Uint128",
+        "properties": [
+          {
+            "name": "type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "TotalPowerAtHeightResponse",
+        "properties": [
+          {
+            "name": "height",
+            "type": "number"
+          },
+          {
+            "name": "power",
+            "type": "Uint128"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "VotingPowerAtHeightResponse",
+        "properties": [
+          {
+            "name": "height",
+            "type": "number"
+          },
+          {
+            "name": "power",
+            "type": "Uint128"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Array_of_VotingVault",
+        "properties": [
+          {
+            "name": "type",
+            "type": "VotingVault[]"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "VotingVault",
+        "properties": [
+          {
+            "name": "address",
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "NeutronVotingRegistryReadOnlyInterface",
+        "properties": [
+          {
+            "name": "dao",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "config",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "votingVaults",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "votingPowerAtHeight",
+            "type": "({\n    address,\n    height\n  }: {\n    address: string;\n    height: number | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "totalPowerAtHeight",
+            "type": "({\n    height\n  }: {\n    height: number | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "info",
+            "type": "() => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "NeutronVotingRegistryQueryContract",
+        "properties": [
+          {
+            "name": "dao",
+            "type": "unknown"
+          },
+          {
+            "name": "config",
+            "type": "unknown"
+          },
+          {
+            "name": "votingVaults",
+            "type": "unknown"
+          },
+          {
+            "name": "votingPowerAtHeight",
+            "type": "unknown"
+          },
+          {
+            "name": "totalPowerAtHeight",
+            "type": "unknown"
+          },
+          {
+            "name": "info",
+            "type": "unknown"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "NeutronVotingRegistryInterface",
+        "properties": [
+          {
+            "name": "addVotingVault",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    newVotingVaultContract\n  }: {\n    newVotingVaultContract: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "removeVotingVault",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    oldVotingVaultContract\n  }: {\n    oldVotingVaultContract: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "updateConfig",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    owner\n  }: {\n    owner: string;\n  }) => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "NeutronVotingRegistryContract",
+        "properties": [
+          {
+            "name": "addVotingVault",
+            "type": "unknown"
+          },
+          {
+            "name": "removeVotingVault",
+            "type": "unknown"
+          },
+          {
+            "name": "updateConfig",
+            "type": "unknown"
+          }
+        ]
+      }
+    ]
+  },
+  "CounterContract": {
+    "schemaData": [
+      {
+        "kind": "typeAlias",
+        "name": "ExecuteMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  increment: {\n    [k: string]: unknown;\n  };\n} | {\n  reset: {\n    count: number;\n    [k: string]: unknown;\n  };\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InstantiateMsg",
+        "properties": [
+          {
+            "name": "count",
+            "type": "number"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "QueryMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  get_count: {\n    [k: string]: unknown;\n  };\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "CounterReadOnlyInterface",
+        "properties": [
+          {
+            "name": "getCount",
+            "type": "() => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "CounterQueryContract",
+        "properties": [
+          {
+            "name": "getCount",
+            "type": "unknown"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "CounterInterface",
+        "properties": [
+          {
+            "name": "increment",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }) => Promise<any>"
+          },
+          {
+            "name": "reset",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    count\n  }: {\n    count: number;\n  }) => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "CounterContract",
+        "properties": [
+          {
+            "name": "increment",
+            "type": "unknown"
+          },
+          {
+            "name": "reset",
+            "type": "unknown"
+          }
+        ]
+      }
+    ]
+  },
+  "DecentralizedStablecoinContract": {
+    "schemaData": [
+      {
+        "kind": "typeAlias",
+        "name": "Cw20ExecuteMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  transfer: {\n    amount: Uint128;\n    recipient: string;\n  };\n} | {\n  burn: {\n    amount: Uint128;\n  };\n} | {\n  send: {\n    amount: Uint128;\n    contract: string;\n    msg: Binary;\n  };\n} | {\n  increase_allowance: {\n    amount: Uint128;\n    expires?: Expiration | null;\n    spender: string;\n  };\n} | {\n  decrease_allowance: {\n    amount: Uint128;\n    expires?: Expiration | null;\n    spender: string;\n  };\n} | {\n  transfer_from: {\n    amount: Uint128;\n    owner: string;\n    recipient: string;\n  };\n} | {\n  send_from: {\n    amount: Uint128;\n    contract: string;\n    msg: Binary;\n    owner: string;\n  };\n} | {\n  burn_from: {\n    amount: Uint128;\n    owner: string;\n  };\n} | {\n  mint: {\n    amount: Uint128;\n    recipient: string;\n  };\n} | {\n  update_minter: {\n    new_minter?: string | null;\n  };\n} | {\n  update_marketing: {\n    description?: string | null;\n    marketing?: string | null;\n    project?: string | null;\n  };\n} | {\n  upload_logo: Logo;\n}"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Uint128",
+        "properties": [
+          {
+            "name": "type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Binary",
+        "properties": [
+          {
+            "name": "type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Expiration",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  at_height: number;\n} | {\n  at_time: Timestamp;\n} | {\n  never: {};\n}"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Timestamp",
+        "properties": [
+          {
+            "name": "type",
+            "type": "Uint64"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Uint64",
+        "properties": [
+          {
+            "name": "type",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "Logo",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  url: string;\n} | {\n  embedded: EmbeddedLogo;\n}"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "EmbeddedLogo",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  svg: Binary;\n} | {\n  png: Binary;\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InstantiateMsg",
+        "properties": [
+          {
+            "name": "decimals",
+            "type": "number"
+          },
+          {
+            "name": "initial_balances",
+            "type": "Cw20Coin[]"
+          },
+          {
+            "name": "marketing",
+            "type": "InstantiateMarketingInfo | null"
+          },
+          {
+            "name": "mint",
+            "type": "MinterResponse | null"
+          },
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "symbol",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "Cw20Coin",
+        "properties": [
+          {
+            "name": "address",
+            "type": "string"
+          },
+          {
+            "name": "amount",
+            "type": "Uint128"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "InstantiateMarketingInfo",
+        "properties": [
+          {
+            "name": "description",
+            "type": "string | null"
+          },
+          {
+            "name": "logo",
+            "type": "Logo | null"
+          },
+          {
+            "name": "marketing",
+            "type": "string | null"
+          },
+          {
+            "name": "project",
+            "type": "string | null"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "MinterResponse",
+        "properties": [
+          {
+            "name": "cap",
+            "type": "Uint128 | null"
+          },
+          {
+            "name": "minter",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "kind": "typeAlias",
+        "name": "QueryMsg",
+        "properties": [
+          {
+            "name": "type",
+            "type": "{\n  balance: {\n    address: string;\n  };\n} | {\n  token_info: {};\n} | {\n  minter: {};\n} | {\n  allowance: {\n    owner: string;\n    spender: string;\n  };\n} | {\n  all_allowances: {\n    limit?: number | null;\n    owner: string;\n    start_after?: string | null;\n  };\n} | {\n  all_spender_allowances: {\n    limit?: number | null;\n    spender: string;\n    start_after?: string | null;\n  };\n} | {\n  all_accounts: {\n    limit?: number | null;\n    start_after?: string | null;\n  };\n} | {\n  marketing_info: {};\n} | {\n  download_logo: {};\n}"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "DecentralizedStablecoinReadOnlyInterface",
+        "properties": [
+          {
+            "name": "balance",
+            "type": "({\n    address\n  }: {\n    address: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "tokenInfo",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "minter",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "allowance",
+            "type": "({\n    owner,\n    spender\n  }: {\n    owner: string;\n    spender: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "allAllowances",
+            "type": "({\n    limit,\n    owner,\n    startAfter\n  }: {\n    limit: number | null;\n    owner: string;\n    startAfter: string | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "allSpenderAllowances",
+            "type": "({\n    limit,\n    spender,\n    startAfter\n  }: {\n    limit: number | null;\n    spender: string;\n    startAfter: string | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "allAccounts",
+            "type": "({\n    limit,\n    startAfter\n  }: {\n    limit: number | null;\n    startAfter: string | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "marketingInfo",
+            "type": "() => Promise<any>"
+          },
+          {
+            "name": "downloadLogo",
+            "type": "() => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "DecentralizedStablecoinQueryContract",
+        "properties": [
+          {
+            "name": "balance",
+            "type": "unknown"
+          },
+          {
+            "name": "tokenInfo",
+            "type": "unknown"
+          },
+          {
+            "name": "minter",
+            "type": "unknown"
+          },
+          {
+            "name": "allowance",
+            "type": "unknown"
+          },
+          {
+            "name": "allAllowances",
+            "type": "unknown"
+          },
+          {
+            "name": "allSpenderAllowances",
+            "type": "unknown"
+          },
+          {
+            "name": "allAccounts",
+            "type": "unknown"
+          },
+          {
+            "name": "marketingInfo",
+            "type": "unknown"
+          },
+          {
+            "name": "downloadLogo",
+            "type": "unknown"
+          }
+        ]
+      },
+      {
+        "kind": "interface",
+        "name": "DecentralizedStablecoinInterface",
+        "properties": [
+          {
+            "name": "transfer",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    recipient\n  }: {\n    amount: Uint128;\n    recipient: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "burn",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount\n  }: {\n    amount: Uint128;\n  }) => Promise<any>"
+          },
+          {
+            "name": "send",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    contract,\n    msg\n  }: {\n    amount: Uint128;\n    contract: string;\n    msg: Binary;\n  }) => Promise<any>"
+          },
+          {
+            "name": "increaseAllowance",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    expires,\n    spender\n  }: {\n    amount: Uint128;\n    expires: Expiration | null;\n    spender: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "decreaseAllowance",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    expires,\n    spender\n  }: {\n    amount: Uint128;\n    expires: Expiration | null;\n    spender: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "transferFrom",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    owner,\n    recipient\n  }: {\n    amount: Uint128;\n    owner: string;\n    recipient: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "sendFrom",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    contract,\n    msg,\n    owner\n  }: {\n    amount: Uint128;\n    contract: string;\n    msg: Binary;\n    owner: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "burnFrom",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    owner\n  }: {\n    amount: Uint128;\n    owner: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "mint",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    amount,\n    recipient\n  }: {\n    amount: Uint128;\n    recipient: string;\n  }) => Promise<any>"
+          },
+          {
+            "name": "updateMinter",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    newMinter\n  }: {\n    newMinter: string | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "updateMarketing",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }, {\n    description,\n    marketing,\n    project\n  }: {\n    description: string | null;\n    marketing: string | null;\n    project: string | null;\n  }) => Promise<any>"
+          },
+          {
+            "name": "uploadLogo",
+            "type": "({\n    account,\n    customFees,\n    memo,\n    transferAmount\n  }: {\n    account: wasmKitTypes.UserAccount;\n    customFees?: wasmKitTypes.TxnStdFee;\n    memo?: string;\n    transferAmount?: readonly Coin[];\n  }) => Promise<any>"
+          }
+        ]
+      },
+      {
+        "kind": "class",
+        "name": "DecentralizedStablecoinContract",
+        "properties": [
+          {
+            "name": "transfer",
+            "type": "unknown"
+          },
+          {
+            "name": "burn",
+            "type": "unknown"
+          },
+          {
+            "name": "send",
+            "type": "unknown"
+          },
+          {
+            "name": "increaseAllowance",
+            "type": "unknown"
+          },
+          {
+            "name": "decreaseAllowance",
+            "type": "unknown"
+          },
+          {
+            "name": "transferFrom",
+            "type": "unknown"
+          },
+          {
+            "name": "sendFrom",
+            "type": "unknown"
+          },
+          {
+            "name": "burnFrom",
+            "type": "unknown"
+          },
+          {
+            "name": "mint",
+            "type": "unknown"
+          },
+          {
+            "name": "updateMinter",
+            "type": "unknown"
+          },
+          {
+            "name": "updateMarketing",
+            "type": "unknown"
+          },
+          {
+            "name": "uploadLogo",
+            "type": "unknown"
+          }
+        ]
+      }
+    ]
+  }
+}
