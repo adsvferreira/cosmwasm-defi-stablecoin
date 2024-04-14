@@ -27,6 +27,9 @@ pub enum ContractError {
     #[error("Health factor is ok, user cannot be liquidated")]
     HealthFactorOk {},
 
+    #[error("Missing Native Asset Funds")]
+    MissingNativeFunds { denom: String},
+
     #[error("Validator '{validator}' not in current validator set")]
     NotInValidatorSet { validator: String },
 

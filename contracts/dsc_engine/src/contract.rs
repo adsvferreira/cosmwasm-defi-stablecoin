@@ -21,8 +21,8 @@ TODO NEXT: Test balances after liquidation
 
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, CosmosMsg, Decimal, Deps, DepsMut, Empty, Env, MessageInfo,
-    QuerierWrapper, QueryRequest, Response, StdResult, Uint128, WasmMsg, WasmQuery,
+    to_binary, Addr, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Empty, Env,
+    MessageInfo, QuerierWrapper, QueryRequest, Response, StdResult, Uint128, WasmMsg, WasmQuery,
 };
 #[cfg(not(feature = "library"))]
 use cw2::set_contract_version;
@@ -196,6 +196,7 @@ mod exec {
                 denom: collateral_asset.inner(),
             });
         }
+
         /// TRANSFER COLLATERAL FROM USER TO CONTRACT
         // If the asset is a token contract, then we need to execute a TransferFrom msg to receive assets
         // If the asset is native token, the pool balance is already increased
@@ -210,6 +211,14 @@ mod exec {
                 })?,
                 funds: vec![],
             }));
+        } else {
+            if info.funds[0].denom != collateral_asset.inner()
+                || info.funds[0].amount != amount_collateral
+            {
+                return Err(ContractError::MissingNativeFunds {
+                    denom: collateral_asset.inner(),
+                });
+            }
         };
 
         COLLATERAL_DEPOSITED.update(
@@ -297,6 +306,14 @@ mod exec {
                 })?,
                 funds: vec![],
             }));
+        } else {
+            messages.push(CosmosMsg::Bank(BankMsg::Send {
+                to_address: info.sender.to_string(),
+                amount: vec![Coin {
+                    denom: collateral_asset.inner(),
+                    amount: amount_collateral,
+                }],
+            }));
         };
 
         COLLATERAL_DEPOSITED.update(
@@ -373,12 +390,16 @@ mod exec {
                 })?,
                 funds: vec![],
             }));
+        } else {
+            messages.push(CosmosMsg::Bank(BankMsg::Send {
+                to_address: info.sender.to_string(),
+                amount: vec![Coin {
+                    denom: collateral_asset.inner(),
+                    amount: precision_adjusted_collateral_to_redeem,
+                }],
+            }));
         };
-        // TODO: Implement native transfer logic in else // Same for redeem
-        // Ok(CosmosMsg::Bank(BankMsg::Send {
-        //     to_address: recipient,
-        //     amount: vec![self.as_coin()?],
-        // }))
+
         let user_addr = &deps.api.addr_validate(&user)?;
         COLLATERAL_DEPOSITED.update(
             deps.storage,
@@ -471,6 +492,14 @@ mod exec {
                     amount: amount_collateral,
                 })?,
                 funds: vec![],
+            }));
+        } else {
+            messages.push(CosmosMsg::Bank(BankMsg::Send {
+                to_address: info.sender.to_string(),
+                amount: vec![Coin {
+                    denom: collateral_asset.inner(),
+                    amount: amount_collateral,
+                }],
             }));
         };
 
@@ -934,6 +963,7 @@ mod tests {
     const LIQ_BONUS: Uint128 = Uint128::new(10);
     const MIN_HEALTH_FACTOR: Decimal = Decimal::one();
     const NATIVE_COLLATERAL_DENOM: &str = "native";
+    const INITIAL_OWNER_NATIVE_BALANCE: u128 = 15_000_000;
     const CW20_COLLATERAL_DENOM: &str = "address";
     const CW20_AMOUNT_MINTED_TO_OWNER: Uint128 = Uint128::new(1_000_000_000_000);
     const ORACLE_ADDRESS: &str = "oracle_addr";
@@ -1300,7 +1330,7 @@ mod tests {
                 .init_balance(
                     storage,
                     &Addr::unchecked(OWNER),
-                    coins(5, NATIVE_COLLATERAL_DENOM),
+                    coins(INITIAL_OWNER_NATIVE_BALANCE, NATIVE_COLLATERAL_DENOM),
                 )
                 .unwrap()
         });
@@ -1426,7 +1456,10 @@ mod tests {
                     amount_collateral: AMOUNT_COLLATERAL_OK,
                     amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
                 },
-                &[],
+                &[Coin {
+                    denom: String::from(NATIVE_COLLATERAL_DENOM),
+                    amount: AMOUNT_COLLATERAL_OK,
+                }],
             )
             .unwrap();
 
@@ -1709,7 +1742,16 @@ mod tests {
 
     #[test]
     fn proper_redeem_valid_native_collateral_and_burn_dsc() {
-        let mut app = App::default();
+        let mut app = App::new(|router, _, storage| {
+            router
+                .bank
+                .init_balance(
+                    storage,
+                    &Addr::unchecked(OWNER),
+                    coins(INITIAL_OWNER_NATIVE_BALANCE, NATIVE_COLLATERAL_DENOM),
+                )
+                .unwrap()
+        });
 
         // 1 - Instantiate mock-pyth and price oracle
 
@@ -1805,7 +1847,10 @@ mod tests {
                     amount_collateral: AMOUNT_COLLATERAL_OK,
                     amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
                 },
-                &[],
+                &[Coin {
+                    denom: String::from(NATIVE_COLLATERAL_DENOM),
+                    amount: AMOUNT_COLLATERAL_OK,
+                }],
             )
             .unwrap();
 
@@ -1884,7 +1929,25 @@ mod tests {
 
     #[test]
     fn proper_native_liquidation() {
-        let mut app = App::default();
+        let mut app = App::new(|router, _, storage| {
+            router
+                .bank
+                .init_balance(
+                    storage,
+                    &Addr::unchecked(OWNER),
+                    coins(INITIAL_OWNER_NATIVE_BALANCE, NATIVE_COLLATERAL_DENOM),
+                )
+                .unwrap()
+        });
+
+        let send_msg = app.send_tokens(
+            Addr::unchecked(OWNER),
+            Addr::unchecked(LIQUIDATOR),
+            &[Coin {
+                denom: String::from(NATIVE_COLLATERAL_DENOM),
+                amount: AMOUNT_COLLATERAL_OK,
+            }],
+        );
 
         // 1 - Instantiate mock-pyth and price oracle
 
@@ -1980,7 +2043,10 @@ mod tests {
                     amount_collateral: AMOUNT_COLLATERAL_OK,
                     amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
                 },
-                &[],
+                &[Coin {
+                    denom: String::from(NATIVE_COLLATERAL_DENOM),
+                    amount: AMOUNT_COLLATERAL_OK,
+                }],
             )
             .unwrap();
 
@@ -2006,7 +2072,10 @@ mod tests {
                     amount_collateral: AMOUNT_COLLATERAL_OK,
                     amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
                 },
-                &[],
+                &[Coin {
+                    denom: String::from(NATIVE_COLLATERAL_DENOM),
+                    amount: AMOUNT_COLLATERAL_OK,
+                }],
             )
             .unwrap();
 
