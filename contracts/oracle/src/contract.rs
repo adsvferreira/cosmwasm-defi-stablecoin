@@ -199,7 +199,7 @@ mod test {
         let result = query(deps.as_ref(), env, msg)
             .and_then(|binary| from_binary::<FetchPriceResponse>(&binary));
 
-        println!("PRICE RESULT: {:?}", result);
+        // println!("PRICE RESULT: {:?}", result);
 
         assert_eq!(result.map(|r| r.current_price.price), Ok(100));
     }

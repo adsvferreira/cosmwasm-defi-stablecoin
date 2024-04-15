@@ -3,8 +3,7 @@ TODO:
 0 - Add missing queries - OK
 1 - Add missing deposit logs (mimic foundry version) - OK
 2 - Refactor native deposit test - OK
-3 - Implement withdraw/liquidation logic + fundamental tests (withdraw ok)
-TODO NEXT: Test balances after liquidation
+3 - Implement withdraw/liquidation logic + fundamental tests - OK
 3.5 - Implement From trait in error file to avoid unrwap() instead of ? when errors from Decimal and others cannot be converted to ContractError
 4 - Implement all missing queries (if there are any)
 5 - Research how to not have duplicated code in exec/query modules (functions that receive Deps/DepsMut) and implement
@@ -977,9 +976,13 @@ mod tests {
     const AMOUNT_DSC_TO_MINT_OK: Uint128 = Uint128::new(1_000_000); // health factor = 6.8
     const DEBT_TO_COVER: Uint128 = Uint128::new(900_000);
     const LIQUIDATION_PRICE: i64 = 97_000;
-    const COLLATERAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(3_998_000); // 2_000_000 + 0.9 * 2_000_000 + 0.1 * 0.9 * 2_000_000
-    const COLLATERAL_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(20_000); // 2_000_000 - 0.9 * 2_000_000 - 0.1 * 0.9 * 2_000_000
+    const FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(2_000_000); // Same as initial
+    const FINAL_COLLATERAL_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(979_382); // 2_000_000/1_000_000 - (900_000/1_000_000 * 100_000/97_000) * 1.1
     const FINAL_DSC_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(100_000); // 1_000_000 - 900_000
+    const FINAL_DSC_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(1_000_000); // Same as initial
+    const FINAL_DSC_SUPPLY: Uint128 = Uint128::new(1_100_000); // 2_000_000 - 900_000
+    const FINAL_NATIVE_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(1_020_618); // (900_000/1_000_000 * 100_000/97_000) * 1.1
+    const FINAL_NATIVE_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(11_000_000); // 15_000_000 - 2_000_000 - 2_000_000
 
     fn get_default_instantiate_msg(
         cw20_address: Option<&str>,
@@ -2125,7 +2128,7 @@ mod tests {
             )
             .unwrap();
 
-        println!("LIQUIDATION RESPONSE: {:?}", liquidation_resp);
+        // println!("LIQUIDATION RESPONSE: {:?}", liquidation_resp);
 
         let final_deposited_owner_native_balance: Uint128 = app
             .wrap()
@@ -2134,6 +2137,27 @@ mod tests {
                 &QueryMsg::CollateralBalanceOfUser {
                     user: String::from(OWNER),
                     collateral_asset: String::from(NATIVE_COLLATERAL_DENOM),
+                },
+            )
+            .unwrap();
+
+        let final_deposited_liquidator_native_balance: Uint128 = app
+            .wrap()
+            .query_wasm_smart(
+                dsce_addr.clone(),
+                &QueryMsg::CollateralBalanceOfUser {
+                    user: String::from(LIQUIDATOR),
+                    collateral_asset: String::from(NATIVE_COLLATERAL_DENOM),
+                },
+            )
+            .unwrap();
+
+        let final_owner_dsc_balance: BalanceResponse = app
+            .wrap()
+            .query_wasm_smart(
+                dsc_addr.clone(),
+                &Cw20QueryMsg::Balance {
+                    address: String::from(OWNER),
                 },
             )
             .unwrap();
@@ -2148,6 +2172,12 @@ mod tests {
             )
             .unwrap();
 
+        let final_owner_native_balance: Uint128 = app
+            .wrap()
+            .query_balance(OWNER, NATIVE_COLLATERAL_DENOM)
+            .unwrap()
+            .amount;
+
         let final_liquidator_native_balance: Uint128 = app
             .wrap()
             .query_balance(LIQUIDATOR, NATIVE_COLLATERAL_DENOM)
@@ -2159,18 +2189,30 @@ mod tests {
             .query_wasm_smart(dsc_addr, &Cw20QueryMsg::TokenInfo {})
             .unwrap();
 
-        println!(
-            "DEPOSITED BALANCE OF OWNER: {:?}",
-            final_deposited_owner_native_balance
+        assert_eq!(
+            final_deposited_owner_native_balance,
+            FINAL_COLLATERAL_BALANCE_OF_LIQUIDATED
         );
-        println!(
-            "DSC BALANCE OF LIQUIDATOR: {:?}",
-            final_liquidator_dsc_balance
+        assert_eq!(
+            final_deposited_liquidator_native_balance,
+            FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR
         );
-        println!(
-            "FINAL LIQUIDATOR NATIVE BALANCE: {:?}",
-            final_liquidator_native_balance
+        assert_eq!(
+            final_owner_dsc_balance.balance,
+            FINAL_DSC_BALANCE_OF_LIQUIDATED
         );
-        println!("FINAL DSC INFO: {:?}", final_dsc_info);
+        assert_eq!(
+            final_liquidator_dsc_balance.balance,
+            FINAL_DSC_BALANCE_OF_LIQUIDATOR
+        );
+        assert_eq!(
+            final_owner_native_balance,
+            FINAL_NATIVE_BALANCE_OF_LIQUIDATED
+        );
+        assert_eq!(
+            final_liquidator_native_balance,
+            FINAL_NATIVE_BALANCE_OF_LIQUIDATOR
+        );
+        assert_eq!(final_dsc_info.total_supply, FINAL_DSC_SUPPLY);
     }
 }
