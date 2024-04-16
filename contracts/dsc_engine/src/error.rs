@@ -1,4 +1,5 @@
-use cosmwasm_std::{Decimal, StdError, Uint128};
+use cosmwasm_std::{Decimal, DecimalRangeExceeded, OverflowError, StdError};
+use hex::FromHexError;
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq)]
@@ -28,28 +29,7 @@ pub enum ContractError {
     HealthFactorOk {},
 
     #[error("Missing Native Asset Funds")]
-    MissingNativeFunds { denom: String},
-
-    #[error("Validator '{validator}' not in current validator set")]
-    NotInValidatorSet { validator: String },
-
-    #[error("Different denominations in bonds: '{denom1}' vs. '{denom2}'")]
-    DifferentBondDenom { denom1: String, denom2: String },
-
-    #[error("Stored bonded {stored}, but query bonded {queried}")]
-    BondedMismatch { stored: Uint128, queried: Uint128 },
-
-    #[error("No {denom} tokens sent")]
-    EmptyBalance { denom: String },
-
-    #[error("Must unbond at least {min_bonded} {denom}")]
-    UnbondTooSmall { min_bonded: Uint128, denom: String },
-
-    #[error("Insufficient balance in contract to process claim")]
-    BalanceTooSmall {},
-
-    #[error("No claims that can be released currently")]
-    NothingToClaim {},
+    MissingNativeFunds { denom: String },
 
     #[error("Cannot set to own account")]
     CannotSetOwnAccount {},
@@ -96,5 +76,23 @@ impl From<cw20_base::ContractError> for ContractError {
                 ContractError::DuplicateInitialBalanceAddresses {}
             }
         }
+    }
+}
+
+impl From<DecimalRangeExceeded> for ContractError {
+    fn from(error: DecimalRangeExceeded) -> Self {
+        ContractError::Std(StdError::generic_err(error.to_string()))
+    }
+}
+
+impl From<OverflowError> for ContractError {
+    fn from(error: OverflowError) -> Self {
+        ContractError::Std(StdError::generic_err(error.to_string()))
+    }
+}
+
+impl From<FromHexError> for ContractError {
+    fn from(error: FromHexError) -> Self {
+        ContractError::Std(StdError::generic_err(error.to_string()))
     }
 }

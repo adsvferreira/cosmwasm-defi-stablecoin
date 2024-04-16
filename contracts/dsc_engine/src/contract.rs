@@ -4,7 +4,7 @@ TODO:
 1 - Add missing deposit logs (mimic foundry version) - OK
 2 - Refactor native deposit test - OK
 3 - Implement withdraw/liquidation logic + fundamental tests - OK
-3.5 - Implement From trait in error file to avoid unrwap() instead of ? when errors from Decimal and others cannot be converted to ContractError
+3.5 - Implement From trait in error file to avoid unrwap() instead of ? when errors from Decimal and others cannot be converted to ContractError - OK
 4 - Implement all missing queries (if there are any)
 5 - Research how to not have duplicated code in exec/query modules (functions that receive Deps/DepsMut) and implement
 -> Possible solution: Add functions only responsible for state interaction (load/save..) and re-use all the remaining code
@@ -348,7 +348,7 @@ mod exec {
         let config = CONFIG.load(deps.storage)?;
         let collateral_token_decimals_precision = 6; // TODO: dynamic
         let decimal_liquidation_bonus_precision =
-            Decimal::from_atomics(config.liquidation_bonus, 2).unwrap();
+            Decimal::from_atomics(config.liquidation_bonus, 2)?;
         let starting_user_health_factor = get_health_factor(&deps, user.to_string())?;
         if starting_user_health_factor >= config.min_health_factor {
             return Err(ContractError::HealthFactorOk {});
@@ -358,11 +358,10 @@ mod exec {
         let bonus_collateral = token_amount_from_debt_covered * decimal_liquidation_bonus_precision;
         let collateral_to_redeem = token_amount_from_debt_covered + bonus_collateral;
         let precision_adjusted_collateral_to_redeem = collateral_to_redeem
-            .checked_mul(
-                Decimal::from_atomics(10_u32.pow(collateral_token_decimals_precision as u32), 0)
-                    .unwrap(),
-            )
-            .unwrap()
+            .checked_mul(Decimal::from_atomics(
+                10_u32.pow(collateral_token_decimals_precision as u32),
+                0,
+            )?)?
             .floor()
             .to_string()
             .parse::<Uint128>()?;
@@ -411,12 +410,13 @@ mod exec {
         /// BURN DSC
         let dsc_token_decimals = 6;
         let precision_adjusted_debt_to_cover = debt_to_cover
-            .checked_mul(Decimal::from_atomics(10_u32.pow(dsc_token_decimals as u32), 0).unwrap())
-            .unwrap()
+            .checked_mul(Decimal::from_atomics(
+                10_u32.pow(dsc_token_decimals as u32),
+                0,
+            )?)?
             .floor()
             .to_string()
-            .parse::<Uint128>()
-            .unwrap();
+            .parse::<Uint128>()?;
         let burn_dsc_msg = _burn_dsc(
             deps.storage,
             &env,
@@ -584,7 +584,7 @@ mod exec {
         Ok(())
     }
 
-    fn get_health_factor(deps: &DepsMut, user: String) -> StdResult<Decimal> {
+    fn get_health_factor(deps: &DepsMut, user: String) -> Result<Decimal, ContractError> {
         let AccountInfoResponse {
             deposited_collateral_in_usd,
             total_dsc_minted,
@@ -600,26 +600,24 @@ mod exec {
         deps: &DepsMut,
         total_dsc_minted: Uint128,
         collateral_value_in_usd: Decimal,
-    ) -> StdResult<Decimal> {
+    ) -> Result<Decimal, ContractError> {
         if total_dsc_minted == Uint128::new(0) {
             Ok(Decimal::new(Uint128::MAX))
         } else {
             let config = CONFIG.load(deps.storage)?;
             let liquidation_threshold =
                 Decimal::percent(config.liquidation_threshold.u128() as u64);
-            let collateral_adjusted_for_threshold = collateral_value_in_usd
-                .checked_mul(liquidation_threshold)
-                .unwrap();
+            let collateral_adjusted_for_threshold =
+                collateral_value_in_usd.checked_mul(liquidation_threshold)?;
             // TODO: fix DSC decimals hardcoded at 6
-            Ok(collateral_adjusted_for_threshold
-                / Decimal::from_atomics(total_dsc_minted, 6).unwrap())
+            Ok(collateral_adjusted_for_threshold / Decimal::from_atomics(total_dsc_minted, 6)?)
         }
     }
 
     fn get_account_information(
         deps: &DepsMut,
         user_addr: String,
-    ) -> StdResult<AccountInfoResponse> {
+    ) -> Result<AccountInfoResponse, ContractError> {
         let total_dsc_minted =
             DSC_MINTED.may_load(deps.storage, &deps.api.addr_validate(&user_addr)?)?;
         let total_dsc_minted_parsed = match total_dsc_minted {
@@ -633,7 +631,10 @@ mod exec {
         Ok(acc_info)
     }
 
-    fn get_account_collateral_value(deps: &DepsMut, user_addr: String) -> StdResult<Decimal> {
+    fn get_account_collateral_value(
+        deps: &DepsMut,
+        user_addr: String,
+    ) -> Result<Decimal, ContractError> {
         let config = CONFIG.load(deps.storage)?;
 
         let collateral_list = config.assets;
@@ -663,23 +664,22 @@ mod exec {
         asset: &AssetInfo,
         amount: Uint128,
         // amount_decimals: u32, TODO
-    ) -> StdResult<Decimal> {
+    ) -> Result<Decimal, ContractError> {
         let amount_decimals: u32 = 6;
-        let config = CONFIG.load(deps.storage).unwrap();
+        let config = CONFIG.load(deps.storage)?;
         let asset_denom = asset.to_string();
         let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
         let oracle_res = query_price_from_oracle(
             &deps.querier,
             config.oracle_address.to_string(),
             config.pyth_oracle_address.to_string(),
-            PriceIdentifier::from_hex(price_feed_id).unwrap(),
+            PriceIdentifier::from_hex(price_feed_id)?,
         )?;
         let asset_price_usd = Decimal::from_atomics(
             Uint128::from(oracle_res.current_price.price as u64),
             oracle_res.current_price.expo.abs() as u32,
-        )
-        .unwrap();
-        let amount = Decimal::from_atomics(amount, amount_decimals).unwrap();
+        )?;
+        let amount = Decimal::from_atomics(amount, amount_decimals)?;
         Ok(amount.checked_mul(asset_price_usd)?)
     }
 
@@ -688,7 +688,7 @@ mod exec {
         oracle_address: String,
         pyth_oracle_address: String,
         price_feed_id: PriceIdentifier,
-    ) -> StdResult<FetchPriceResponse> {
+    ) -> Result<FetchPriceResponse, ContractError> {
         let asset_price_usd = querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: oracle_address,
             msg: to_binary(&OracleQueryMsg::FetchPrice {
@@ -703,30 +703,20 @@ mod exec {
         deps: &DepsMut,
         asset_denom: String,
         usd_amount: Decimal,
-    ) -> StdResult<Decimal> {
-        let config = CONFIG.load(deps.storage).unwrap();
+    ) -> Result<Decimal, ContractError> {
+        let config = CONFIG.load(deps.storage)?;
         let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
         let oracle_res = query_price_from_oracle(
             &deps.querier,
             config.oracle_address.to_string(),
             config.pyth_oracle_address.to_string(),
-            PriceIdentifier::from_hex(price_feed_id).unwrap(),
+            PriceIdentifier::from_hex(price_feed_id)?,
         )?;
         let asset_price_usd = Decimal::from_atomics(
             Uint128::from(oracle_res.current_price.price as u64),
             oracle_res.current_price.expo.abs() as u32,
-        )
-        .unwrap();
+        )?;
         Ok(usd_amount / asset_price_usd)
-    }
-
-    pub fn get_collateral_token_price_feed(deps: &Deps, asset_denom: String) -> StdResult<String> {
-        let config = CONFIG.load(deps.storage)?;
-        return Ok(config
-            .assets_to_feeds
-            .get(&asset_denom)
-            .unwrap()
-            .to_string());
     }
 }
 
@@ -793,9 +783,8 @@ mod query {
             let config = CONFIG.load(deps.storage)?;
             let liquidation_threshold =
                 Decimal::percent(config.liquidation_threshold.u128() as u64);
-            let collateral_adjusted_for_threshold = collateral_value_in_usd
-                .checked_mul(liquidation_threshold)
-                .unwrap();
+            let collateral_adjusted_for_threshold =
+                collateral_value_in_usd.checked_mul(liquidation_threshold)?;
             // TODO: fix DSC decimals hardcoded at 6
             Ok(collateral_adjusted_for_threshold
                 / Decimal::from_atomics(total_dsc_minted, 6).unwrap())
@@ -809,7 +798,7 @@ mod query {
         // amount_decimals: u32, TODO
     ) -> StdResult<Decimal> {
         let amount_decimals: u32 = 6;
-        let config = CONFIG.load(deps.storage).unwrap();
+        let config = CONFIG.load(deps.storage)?;
         let asset_denom = asset.to_string();
         let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
         let oracle_res = query_price_from_oracle(
@@ -832,7 +821,7 @@ mod query {
         asset_denom: String,
         usd_amount: Decimal,
     ) -> StdResult<Decimal> {
-        let config = CONFIG.load(deps.storage).unwrap();
+        let config = CONFIG.load(deps.storage)?;
         let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
         let oracle_res = query_price_from_oracle(
             &deps.querier,

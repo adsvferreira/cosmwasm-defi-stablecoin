@@ -600,6 +600,7 @@ dependencies = [
  "cw20 0.16.0",
  "cw20-base 0.16.0",
  "dsc",
+ "hex",
  "mock-pyth",
  "oracle",
  "pyth-sdk-cw",

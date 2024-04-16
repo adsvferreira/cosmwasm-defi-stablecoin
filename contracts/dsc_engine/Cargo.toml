@@ -27,6 +27,7 @@ cosmwasm-schema = "1.1.5"
 dsc = { path = "../dsc", version = "1.0.0" }
 oracle = { path = "../oracle", version = "1.0.0" }
 pyth-sdk-cw = "1.2.0"
+hex = "0.4.3"
 
 [dev-dependencies]
 cw-multi-test = "0.13.4"
