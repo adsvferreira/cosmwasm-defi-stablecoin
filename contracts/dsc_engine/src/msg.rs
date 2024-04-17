@@ -117,6 +117,8 @@ pub enum QueryMsg {
     GetTokenAmountFromUsd { token: String, usd_amount: Decimal },
     #[returns(String)]
     GetCollateralTokenPriceFeed { collateral_asset: String },
+    #[returns(Uint128)]
+    GetCollateralBalanceOfUser { user: String, token: String },
 }
 
 #[cw_serde]

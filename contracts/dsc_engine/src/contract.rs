@@ -1,23 +1,3 @@
-/*
-TODO:
-0 - Add missing queries - OK
-1 - Add missing deposit logs (mimic foundry version) - OK
-2 - Refactor native deposit test - OK
-3 - Implement withdraw/liquidation logic + fundamental tests - OK
-3.5 - Implement From trait in error file to avoid unrwap() instead of ? when errors from Decimal and others cannot be converted to ContractError - OK
-4 - Implement all missing queries (if there are any)
-5 - Research how to not have duplicated code in exec/query modules (functions that receive Deps/DepsMut) and implement
--> Possible solution: Add functions only responsible for state interaction (load/save..) and re-use all the remaining code
-6 - Implement all missing tests (except fuzz)
-7 - Refactor file struct (at least queries/tests on separate files)
-8 - Optimize bytecode compile + Deploy on Neutron mainnet
-9 - Publish on GitHub with brief Read.me pointing to foundry stable repo + tweet ---------------------------------------------------
-10 - Contract Improvements like dynamic decimals and others that may occur
-11 - Research about migration and "push" improved version
-12 - Recap Foundry/EVM implementation (delete all IDE errors)
-13 - Research/Write bullet point comparison and upload to github/twitter
-*/
-
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Addr, BankMsg, Binary, Coin, CosmosMsg, Decimal, Deps, DepsMut, Empty, Env,
@@ -166,6 +146,9 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetCollateralTokenPriceFeed { collateral_asset } => to_binary(
             &query::get_collateral_token_price_feed(&deps, collateral_asset)?,
         ),
+        QueryMsg::GetCollateralBalanceOfUser { user, token } => {
+            to_binary(&query::get_collateral_balance_of_user(&deps, user, token)?)
+        }
     }
 }
 
@@ -844,6 +827,19 @@ mod query {
             .get(&asset_denom)
             .unwrap()
             .to_string());
+    }
+
+    pub fn get_collateral_balance_of_user(
+        deps: &Deps,
+        user_addr: String,
+        token: String,
+    ) -> StdResult<Uint128> {
+        let user_collateral_balance = COLLATERAL_DEPOSITED
+            .may_load(deps.storage, (&deps.api.addr_validate(&user_addr)?, token))?;
+        match user_collateral_balance {
+            Some(balance) => Ok(balance),
+            None => Ok(Uint128::zero()),
+        }
     }
 
     fn get_account_collateral_value(deps: &Deps, user_addr: String) -> StdResult<Decimal> {
