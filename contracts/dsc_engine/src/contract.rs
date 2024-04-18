@@ -93,7 +93,7 @@ pub fn execute(
         ExecuteMsg::RedeemCollateral {
             collateral_asset,
             amount_collateral,
-        } => exec::redeem_collateral(deps, env, info, collateral_asset, amount_collateral),
+        } => exec::redeem_collateral(deps, info, collateral_asset, amount_collateral),
         ExecuteMsg::Liquidate {
             collateral_asset,
             user,
@@ -155,8 +155,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 mod exec {
 
     use cosmwasm_std::Storage;
-
-    use self::query::get_token_amount_from_usd;
 
     use super::*;
 
@@ -240,7 +238,6 @@ mod exec {
             .add_attribute("from", info.sender)
             .add_attribute("asset", collateral_asset.inner())
             .add_attribute("amount", amount_collateral);
-        // .add_attribute("health_factor", user_health_factor.to_string()) // debug only
 
         Ok(res)
     }
@@ -276,35 +273,15 @@ mod exec {
         )?;
         messages.push(burn_dsc_msg);
 
-        /// TRANSFER COLLATERAL FROM CONTRACT TO USER
-        // If the asset is a token contract, then we need to execute a TransferFrom msg to receive assets
-        // If the asset is native token, the pool balance is already increased
-        if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
-            messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: contract_addr.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: env.contract.address.to_string(),
-                    amount: amount_collateral,
-                })?,
-                funds: vec![],
-            }));
-        } else {
-            messages.push(CosmosMsg::Bank(BankMsg::Send {
-                to_address: info.sender.to_string(),
-                amount: vec![Coin {
-                    denom: collateral_asset.inner(),
-                    amount: amount_collateral,
-                }],
-            }));
-        };
-
-        COLLATERAL_DEPOSITED.update(
+        /// REDEEM COLLATERAL
+        let redeem_collateral_msg = _redeem_collateral(
             deps.storage,
-            (&info.sender, collateral_asset.inner()),
-            |balance: Option<Uint128>| -> StdResult<_> {
-                Ok(balance.unwrap_or_default() - amount_collateral)
-            },
-        )?; // will panic if user hasn't enough deposited collateral deposited
+            &collateral_asset,
+            amount_collateral,
+            &info.sender,
+            &info.sender,
+        )?;
+        messages.push(redeem_collateral_msg);
 
         /// VERIFY NEW USER HEALTH FACTOR
         revert_if_health_factor_is_broken(&deps, &info.sender);
@@ -315,7 +292,6 @@ mod exec {
             .add_attribute("from", info.sender)
             .add_attribute("asset", collateral_asset.inner())
             .add_attribute("amount", amount_collateral);
-        // .add_attribute("health_factor", user_health_factor.to_string()) // debug only
 
         Ok(res)
     }
@@ -349,46 +325,18 @@ mod exec {
             .to_string()
             .parse::<Uint128>()?;
 
-        // REDEEM COLLATERAL
-        let config = CONFIG.load(deps.storage)?;
-        if !config
-            .assets_to_feeds
-            .contains_key(&collateral_asset.to_string())
-        {
-            return Err(ContractError::InvalidCollateralAsset {
-                denom: collateral_asset.inner(),
-            });
-        }
-
+        let user_addr = &deps.api.addr_validate(&user)?;
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
 
-        if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
-            messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: contract_addr.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: info.sender.to_string(),
-                    amount: precision_adjusted_collateral_to_redeem,
-                })?,
-                funds: vec![],
-            }));
-        } else {
-            messages.push(CosmosMsg::Bank(BankMsg::Send {
-                to_address: info.sender.to_string(),
-                amount: vec![Coin {
-                    denom: collateral_asset.inner(),
-                    amount: precision_adjusted_collateral_to_redeem,
-                }],
-            }));
-        };
-
-        let user_addr = &deps.api.addr_validate(&user)?;
-        COLLATERAL_DEPOSITED.update(
+        /// REDEEM COLLATERAL
+        let redeem_collateral_msg = _redeem_collateral(
             deps.storage,
-            (user_addr, collateral_asset.inner()),
-            |balance: Option<Uint128>| -> StdResult<_> {
-                Ok(balance.unwrap_or_default() - precision_adjusted_collateral_to_redeem)
-            },
-        )?; // will panic if user hasn't enough deposited collateral deposited
+            &collateral_asset,
+            precision_adjusted_collateral_to_redeem,
+            user_addr,
+            &info.sender,
+        )?;
+        messages.push(redeem_collateral_msg);
 
         /// BURN DSC
         let dsc_token_decimals = 6;
@@ -409,7 +357,7 @@ mod exec {
         )?;
         messages.push(burn_dsc_msg);
 
-        let ending_user_health_factor = get_health_factor(&deps, user.to_string())?;
+        let ending_user_health_factor = get_health_factor(&deps, user.clone())?;
 
         if ending_user_health_factor <= starting_user_health_factor {
             return Err(ContractError::HealthFactorNotImproved {});
@@ -449,7 +397,6 @@ mod exec {
 
     pub fn redeem_collateral(
         deps: DepsMut,
-        env: Env,
         info: MessageInfo,
         collateral_asset: AssetInfo,
         amount_collateral: Uint128,
@@ -466,32 +413,14 @@ mod exec {
 
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
 
-        if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
-            messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: contract_addr.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: env.contract.address.to_string(),
-                    amount: amount_collateral,
-                })?,
-                funds: vec![],
-            }));
-        } else {
-            messages.push(CosmosMsg::Bank(BankMsg::Send {
-                to_address: info.sender.to_string(),
-                amount: vec![Coin {
-                    denom: collateral_asset.inner(),
-                    amount: amount_collateral,
-                }],
-            }));
-        };
-
-        COLLATERAL_DEPOSITED.update(
+        let redeem_collateral_msg = _redeem_collateral(
             deps.storage,
-            (&info.sender, collateral_asset.inner()),
-            |balance: Option<Uint128>| -> StdResult<_> {
-                Ok(balance.unwrap_or_default() - amount_collateral)
-            },
-        )?; // will panic if user hasn't enough deposited collateral deposited
+            &collateral_asset,
+            amount_collateral,
+            &info.sender,
+            &info.sender,
+        )?;
+        messages.push(redeem_collateral_msg);
 
         revert_if_health_factor_is_broken(&deps, &info.sender);
 
@@ -511,7 +440,7 @@ mod exec {
         amount_dsc_to_burn: Uint128,
     ) -> Result<Response, ContractError> {
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
-        let burn_dsc_msg = _burn_dsc(
+        let mut burn_dsc_msg = _burn_dsc(
             deps.storage,
             &env,
             amount_dsc_to_burn,
@@ -522,6 +451,44 @@ mod exec {
         revert_if_health_factor_is_broken(&deps, &info.sender);
         let res = Response::new().add_messages(messages);
         Ok(res)
+    }
+
+    fn _redeem_collateral(
+        storage: &mut dyn Storage,
+        collateral_asset: &AssetInfo,
+        amount_collateral: Uint128,
+        from: &Addr,
+        to: &Addr,
+    ) -> Result<CosmosMsg, ContractError> {
+        let message: CosmosMsg;
+        if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
+            message = CosmosMsg::Wasm(WasmMsg::Execute {
+                contract_addr: contract_addr.to_string(),
+                msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                    recipient: to.to_string(),
+                    amount: amount_collateral,
+                })?,
+                funds: vec![],
+            });
+        } else {
+            message = CosmosMsg::Bank(BankMsg::Send {
+                to_address: to.to_string(),
+                amount: vec![Coin {
+                    denom: collateral_asset.inner(),
+                    amount: amount_collateral,
+                }],
+            });
+        };
+
+        COLLATERAL_DEPOSITED.update(
+            storage,
+            (&from, collateral_asset.inner()),
+            |balance: Option<Uint128>| -> StdResult<_> {
+                Ok(balance.unwrap_or_default() - amount_collateral)
+            },
+        )?; // will fail if user hasn't enough deposited collateral deposited
+
+        Ok(message)
     }
 
     fn _burn_dsc(
@@ -592,7 +559,6 @@ mod exec {
                 Decimal::percent(config.liquidation_threshold.u128() as u64);
             let collateral_adjusted_for_threshold =
                 collateral_value_in_usd.checked_mul(liquidation_threshold)?;
-            // TODO: fix DSC decimals hardcoded at 6
             Ok(collateral_adjusted_for_threshold / Decimal::from_atomics(total_dsc_minted, 6)?)
         }
     }
@@ -646,7 +612,6 @@ mod exec {
         deps: &DepsMut,
         asset: &AssetInfo,
         amount: Uint128,
-        // amount_decimals: u32, TODO
     ) -> Result<Decimal, ContractError> {
         let amount_decimals: u32 = 6;
         let config = CONFIG.load(deps.storage)?;
@@ -768,18 +733,12 @@ mod query {
                 Decimal::percent(config.liquidation_threshold.u128() as u64);
             let collateral_adjusted_for_threshold =
                 collateral_value_in_usd.checked_mul(liquidation_threshold)?;
-            // TODO: fix DSC decimals hardcoded at 6
             Ok(collateral_adjusted_for_threshold
                 / Decimal::from_atomics(total_dsc_minted, 6).unwrap())
         }
     }
 
-    pub fn get_usd_value(
-        deps: &Deps,
-        asset: &AssetInfo,
-        amount: Uint128,
-        // amount_decimals: u32, TODO
-    ) -> StdResult<Decimal> {
+    pub fn get_usd_value(deps: &Deps, asset: &AssetInfo, amount: Uint128) -> StdResult<Decimal> {
         let amount_decimals: u32 = 6;
         let config = CONFIG.load(deps.storage)?;
         let asset_denom = asset.to_string();
@@ -913,13 +872,6 @@ mod query {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use std::str::FromStr;
-
-    // use cosmwasm_std::Int128;
-    // use cosmwasm_std::testing::{
-    //     mock_dependencies, mock_env, mock_info, MockQuerier, MOCK_CONTRACT_ADDR,
-    // };
-    // use cosmwasm_std::{coins, Coin, CosmosMsg, Decimal, OverflowError, OverflowOperation};
     use cosmwasm_std::{coins, Empty};
     use cw20::{BalanceResponse, Cw20Coin, MinterResponse, TokenInfoResponse};
     use cw20_base::contract::{
