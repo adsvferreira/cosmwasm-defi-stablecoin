@@ -918,8 +918,9 @@ mod tests {
     const FINAL_DSC_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(100_000); // 1_000_000 - 900_000
     const FINAL_DSC_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(1_000_000); // Same as initial
     const FINAL_DSC_SUPPLY: Uint128 = Uint128::new(1_100_000); // 2_000_000 - 900_000
-    const FINAL_NATIVE_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(1_020_618); // (900_000/1_000_000 * 100_000/97_000) * 1.1
+    const FINAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(1_020_618); // (900_000/1_000_000 * 100_000/97_000) * 1.1
     const FINAL_NATIVE_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(11_000_000); // 15_000_000 - 2_000_000 - 2_000_000
+    const FINAL_CW20_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(13_000_000); // 15_000_000 - 2_000_000
 
     fn get_default_instantiate_msg(
         cw20_address: Option<&str>,
@@ -2034,7 +2035,7 @@ mod tests {
             )
             .unwrap();
 
-        // Change mock-pyth collateral price - set new lower mocked price
+        // 7 - Change mock-pyth collateral price - set new lower mocked price
 
         let update_mock_price_resp = app
             .execute_contract(
@@ -2047,10 +2048,7 @@ mod tests {
             )
             .unwrap();
 
-        // liquidate
-
-        // panicked at 'attempt to subtract with overflow'
-        // OWNER DSC OR DEPOSITED BALANCES ARE ZERO?
+        // 8 - liquidate
 
         let liquidation_resp = app
             .execute_contract(
@@ -2065,7 +2063,7 @@ mod tests {
             )
             .unwrap();
 
-        // println!("LIQUIDATION RESPONSE: {:?}", liquidation_resp);
+        // Assert final state
 
         let final_deposited_owner_native_balance: Uint128 = app
             .wrap()
@@ -2146,9 +2144,335 @@ mod tests {
             final_owner_native_balance,
             FINAL_NATIVE_BALANCE_OF_LIQUIDATED
         );
+        assert_eq!(final_liquidator_native_balance, FINAL_BALANCE_OF_LIQUIDATOR);
+        assert_eq!(final_dsc_info.total_supply, FINAL_DSC_SUPPLY);
+    }
+
+    #[test]
+    fn proper_cw20_liquidation() {
+        let mut app = App::default();
+
+        // 1 - Instantiate cw20 token contract and mint to test users at instantiation
+
+        let cw20_code = ContractWrapper::new(cw20_execute, cw20_instantiate, cw20_query);
+        let cw20_code_id: u64 = app.store_code(Box::new(cw20_code));
+
+        let cw20_instantiate_msg = Cw20InstantiateMsg {
+            name: String::from("CW20 Token"),
+            symbol: String::from(CW20_COLLATERAL_DENOM),
+            decimals: 6,
+            initial_balances: vec![
+                Cw20Coin {
+                    address: String::from(OWNER),
+                    amount: Uint128::from(INITIAL_OWNER_NATIVE_BALANCE),
+                },
+                Cw20Coin {
+                    address: String::from(LIQUIDATOR),
+                    amount: AMOUNT_COLLATERAL_OK,
+                },
+            ],
+            mint: None,
+            marketing: None,
+        };
+
+        let cw20_addr = app
+            .instantiate_contract(
+                cw20_code_id,
+                Addr::unchecked(OWNER),
+                &cw20_instantiate_msg,
+                &[],
+                "cw20",
+                Some(String::from(OWNER)),
+            )
+            .unwrap();
+
+        // 2 - Instantiate mock-pyth and price oracle
+
+        let mock_pyth_code =
+            ContractWrapper::new(mock_pyth_execute, mock_pyth_instantiate, mock_pyth_query);
+        let mock_pyth_code_id: u64 = app.store_code(Box::new(mock_pyth_code));
+
+        let mock_pyth_price_feed_addr = app
+            .instantiate_contract(
+                mock_pyth_code_id,
+                Addr::unchecked(OWNER),
+                &Empty {},
+                &[],
+                "mock-pyth",
+                Some(String::from(OWNER)),
+            )
+            .unwrap();
+
+        let oracle_code = ContractWrapper::new(oracle_execute, oracle_instantiate, oracle_query);
+        let oracle_code_id: u64 = app.store_code(Box::new(oracle_code));
+
+        let oracle_addr = app
+            .instantiate_contract(
+                oracle_code_id,
+                Addr::unchecked(OWNER),
+                &OracleInstantiateMsg {},
+                &[],
+                "oracle",
+                Some(String::from(OWNER)),
+            )
+            .unwrap();
+
+        // 3 - Instantiate DSC
+
+        let dsc_code = ContractWrapper::new(dsc_execute, dsc_instantiate, dsc_query);
+        let dsc_code_id: u64 = app.store_code(Box::new(dsc_code));
+
+        let dsc_addr = app
+            .instantiate_contract(
+                dsc_code_id,
+                Addr::unchecked(OWNER),
+                &get_dsc_instantiate_msg(),
+                &[],
+                "dsc",
+                Some(String::from(OWNER)),
+            )
+            .unwrap();
+
+        // 4 - Instantiate DSCE
+
+        let code = ContractWrapper::new(execute, instantiate, query);
+        let code_id: u64 = app.store_code(Box::new(code));
+
+        let dsce_init_msg = &get_default_instantiate_msg(
+            Some(cw20_addr.as_str()),
+            Some(dsc_addr.as_str()),
+            Some(oracle_addr.as_str()),
+            Some(mock_pyth_price_feed_addr.as_str()),
+        );
+
+        let dsce_addr = app
+            .instantiate_contract(
+                code_id,
+                Addr::unchecked(OWNER),
+                &dsce_init_msg,
+                &[],
+                "dsc_engine",
+                Some(String::from(OWNER)),
+            )
+            .unwrap();
+
+        // 5 - Update DSC minter to DSCE
+
+        let update_dsc_minter_resp = app
+            .execute_contract(
+                Addr::unchecked(OWNER),
+                dsc_addr.clone(),
+                &Cw20ExecuteMsg::UpdateMinter {
+                    new_minter: Some(String::from(dsce_addr.clone())),
+                },
+                &[],
+            )
+            .unwrap();
+
+        // 6 - Increase Allowance of cw20 from users (owner + liquidator) to dsce contract
+
+        let increase_allowance_resp = app
+            .execute_contract(
+                Addr::unchecked(OWNER),
+                cw20_addr.clone(),
+                &Cw20ExecuteMsg::IncreaseAllowance {
+                    spender: String::from(dsce_addr.clone()),
+                    amount: CW20_AMOUNT_MINTED_TO_OWNER,
+                    expires: None,
+                },
+                &[],
+            )
+            .unwrap();
+
+        let increase_allowance_resp = app
+            .execute_contract(
+                Addr::unchecked(LIQUIDATOR),
+                cw20_addr.clone(),
+                &Cw20ExecuteMsg::IncreaseAllowance {
+                    spender: String::from(dsce_addr.clone()),
+                    amount: CW20_AMOUNT_MINTED_TO_OWNER,
+                    expires: None,
+                },
+                &[],
+            )
+            .unwrap();
+
+        // 7 - execute deposit_collateral_and_mint_dsc by user that will be liquidated
+
+        let deposit_resp = app
+            .execute_contract(
+                Addr::unchecked(OWNER),
+                dsce_addr.clone(),
+                &ExecuteMsg::DepositCollateralAndMintDsc {
+                    collateral_asset: AssetInfo::Cw20(Addr::unchecked(cw20_addr.as_str())),
+                    amount_collateral: AMOUNT_COLLATERAL_OK,
+                    amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
+                },
+                &[],
+            )
+            .unwrap();
+
+        let initial_deposited_owner_cw20_balance: Uint128 = app
+            .wrap()
+            .query_wasm_smart(
+                dsce_addr.clone(),
+                &QueryMsg::CollateralBalanceOfUser {
+                    user: String::from(OWNER),
+                    collateral_asset: String::from(cw20_addr.clone()),
+                },
+            )
+            .unwrap();
+
+        // 8 - execute deposit_collateral_and_mint_dsc by liquidator
+
+        let liquidator_deposit_resp = app
+            .execute_contract(
+                Addr::unchecked(LIQUIDATOR),
+                dsce_addr.clone(),
+                &ExecuteMsg::DepositCollateralAndMintDsc {
+                    collateral_asset: AssetInfo::Cw20(Addr::unchecked(cw20_addr.as_str())),
+                    amount_collateral: AMOUNT_COLLATERAL_OK,
+                    amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
+                },
+                &[],
+            )
+            .unwrap();
+
+        // 9 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
+
+        let increase_allowance_resp = app
+            .execute_contract(
+                Addr::unchecked(LIQUIDATOR),
+                dsc_addr.clone(),
+                &Cw20ExecuteMsg::IncreaseAllowance {
+                    spender: String::from(dsce_addr.clone()),
+                    amount: AMOUNT_DSC_TO_MINT_OK,
+                    expires: None,
+                },
+                &[],
+            )
+            .unwrap();
+
+        // 10 - Change mock-pyth collateral price - set new lower mocked price
+
+        let update_mock_price_resp = app
+            .execute_contract(
+                Addr::unchecked(OWNER),
+                mock_pyth_price_feed_addr.clone(),
+                &MockPythExecuteMsg::UpdateMockPrice {
+                    price: LIQUIDATION_PRICE,
+                },
+                &[],
+            )
+            .unwrap();
+
+        // 11 - liquidate
+
+        let liquidation_resp = app
+            .execute_contract(
+                Addr::unchecked(LIQUIDATOR),
+                dsce_addr.clone(),
+                &ExecuteMsg::Liquidate {
+                    collateral_asset: AssetInfo::Cw20(Addr::unchecked(cw20_addr.as_str())),
+                    user: String::from(OWNER),
+                    debt_to_cover: Decimal::from_atomics(DEBT_TO_COVER, 6).unwrap(),
+                },
+                &[],
+            )
+            .unwrap();
+
+        // Assert final state
+
+        let final_deposited_owner_cw20_balance: Uint128 = app
+            .wrap()
+            .query_wasm_smart(
+                dsce_addr.clone(),
+                &QueryMsg::CollateralBalanceOfUser {
+                    user: String::from(OWNER),
+                    collateral_asset: String::from(cw20_addr.clone()),
+                },
+            )
+            .unwrap();
+
+        let final_deposited_liquidator_cw20_balance: Uint128 = app
+            .wrap()
+            .query_wasm_smart(
+                dsce_addr.clone(),
+                &QueryMsg::CollateralBalanceOfUser {
+                    user: String::from(LIQUIDATOR),
+                    collateral_asset: String::from(cw20_addr.clone()),
+                },
+            )
+            .unwrap();
+
+        let final_owner_dsc_balance: BalanceResponse = app
+            .wrap()
+            .query_wasm_smart(
+                dsc_addr.clone(),
+                &Cw20QueryMsg::Balance {
+                    address: String::from(OWNER),
+                },
+            )
+            .unwrap();
+
+        let final_liquidator_dsc_balance: BalanceResponse = app
+            .wrap()
+            .query_wasm_smart(
+                dsc_addr.clone(),
+                &Cw20QueryMsg::Balance {
+                    address: String::from(LIQUIDATOR),
+                },
+            )
+            .unwrap();
+
+        let final_owner_cw20_balance: BalanceResponse = app
+            .wrap()
+            .query_wasm_smart(
+                cw20_addr.clone(),
+                &Cw20QueryMsg::Balance {
+                    address: String::from(OWNER),
+                },
+            )
+            .unwrap();
+
+        let final_liquidator_cw20_balance: BalanceResponse = app
+            .wrap()
+            .query_wasm_smart(
+                cw20_addr.clone(),
+                &Cw20QueryMsg::Balance {
+                    address: String::from(LIQUIDATOR),
+                },
+            )
+            .unwrap();
+
+        let final_dsc_info: TokenInfoResponse = app
+            .wrap()
+            .query_wasm_smart(dsc_addr, &Cw20QueryMsg::TokenInfo {})
+            .unwrap();
+
         assert_eq!(
-            final_liquidator_native_balance,
-            FINAL_NATIVE_BALANCE_OF_LIQUIDATOR
+            final_deposited_owner_cw20_balance,
+            FINAL_COLLATERAL_BALANCE_OF_LIQUIDATED
+        );
+        assert_eq!(
+            final_deposited_liquidator_cw20_balance,
+            FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR
+        );
+        assert_eq!(
+            final_owner_dsc_balance.balance,
+            FINAL_DSC_BALANCE_OF_LIQUIDATED
+        );
+        assert_eq!(
+            final_liquidator_dsc_balance.balance,
+            FINAL_DSC_BALANCE_OF_LIQUIDATOR
+        );
+        assert_eq!(
+            final_owner_cw20_balance.balance,
+            FINAL_CW20_BALANCE_OF_LIQUIDATED
+        );
+        assert_eq!(
+            final_liquidator_cw20_balance.balance,
+            FINAL_BALANCE_OF_LIQUIDATOR
         );
         assert_eq!(final_dsc_info.total_supply, FINAL_DSC_SUPPLY);
     }
