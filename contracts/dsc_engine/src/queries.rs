@@ -1,7 +1,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Decimal, Deps, Env, QuerierWrapper, QueryRequest, StdResult, Uint128,
-    WasmQuery,
+    to_json_binary, Addr, Binary, Decimal, Deps, Env, QuerierWrapper, QueryRequest, StdResult,
+    Uint128, WasmQuery,
 };
 #[cfg(not(feature = "library"))]
 use cw_asset::AssetInfo;
@@ -14,47 +14,49 @@ use pyth_sdk_cw::PriceIdentifier;
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Config {} => to_binary(&query_config(&deps)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(&deps)?),
         QueryMsg::CollateralBalanceOfUser {
             user,
             collateral_asset,
-        } => to_binary(&query_collateral_balance_of_user(
+        } => to_json_binary(&query_collateral_balance_of_user(
             &deps,
             user,
             collateral_asset,
         )?),
-        QueryMsg::UserHealthFactor { user } => to_binary(&query_user_health_factor(&deps, user)?),
+        QueryMsg::UserHealthFactor { user } => {
+            to_json_binary(&query_user_health_factor(&deps, user)?)
+        }
         QueryMsg::AccountInformation { user } => {
-            to_binary(&query_account_information(&deps, user)?)
+            to_json_binary(&query_account_information(&deps, user)?)
         }
         QueryMsg::AccountCollateralValueUsd { user } => {
-            to_binary(&query_account_collateral_value_usd(&deps, user)?)
+            to_json_binary(&query_account_collateral_value_usd(&deps, user)?)
         }
         QueryMsg::CalculateHealthFactor {
             total_dsc_minted,
             collateral_value_usd,
-        } => to_binary(&calculate_health_factor(
+        } => to_json_binary(&calculate_health_factor(
             &deps,
             total_dsc_minted,
             collateral_value_usd,
         )?),
-        QueryMsg::GetUsdValue { token, amount } => to_binary(&get_usd_value(
+        QueryMsg::GetUsdValue { token, amount } => to_json_binary(&get_usd_value(
             &deps,
             &AssetInfo::Cw20(Addr::unchecked(token)),
             amount,
         )?),
         QueryMsg::GetTokenAmountFromUsd { token, usd_amount } => {
-            to_binary(&get_token_amount_from_usd(
+            to_json_binary(&get_token_amount_from_usd(
                 &deps,
                 AssetInfo::Cw20(Addr::unchecked(token)).to_string(),
                 usd_amount,
             )?)
         }
         QueryMsg::GetCollateralTokenPriceFeed { collateral_asset } => {
-            to_binary(&get_collateral_token_price_feed(&deps, collateral_asset)?)
+            to_json_binary(&get_collateral_token_price_feed(&deps, collateral_asset)?)
         }
         QueryMsg::GetCollateralBalanceOfUser { user, token } => {
-            to_binary(&get_collateral_balance_of_user(&deps, user, token)?)
+            to_json_binary(&get_collateral_balance_of_user(&deps, user, token)?)
         }
     }
 }
@@ -239,7 +241,7 @@ fn query_price_from_oracle(
 ) -> StdResult<FetchPriceResponse> {
     let asset_price_usd = querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
         contract_addr: oracle_address,
-        msg: to_binary(&OracleQueryMsg::FetchPrice {
+        msg: to_json_binary(&OracleQueryMsg::FetchPrice {
             pyth_contract_addr: pyth_oracle_address,
             price_feed_id: price_feed_id,
         })?,

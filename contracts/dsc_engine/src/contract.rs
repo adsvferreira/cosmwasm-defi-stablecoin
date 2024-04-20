@@ -1,6 +1,6 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Empty, Env, MessageInfo,
+    to_json_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Empty, Env, MessageInfo,
     QuerierWrapper, QueryRequest, Response, StdResult, Uint128, WasmMsg, WasmQuery,
 };
 #[cfg(not(feature = "library"))]
@@ -134,7 +134,7 @@ mod exec {
         if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
             messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: contract_addr.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::TransferFrom {
+                msg: to_json_binary(&Cw20ExecuteMsg::TransferFrom {
                     owner: info.sender.to_string(),
                     recipient: env.contract.address.to_string(),
                     amount: amount_collateral,
@@ -163,7 +163,7 @@ mod exec {
         /// NOTE: DSC Engine must be declared as minter on DSC CW20 intantiation
         messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.dsc_address.into_string(),
-            msg: to_binary(&Cw20ExecuteMsg::Mint {
+            msg: to_json_binary(&Cw20ExecuteMsg::Mint {
                 recipient: info.sender.to_string(),
                 amount: amount_dsc_to_mint,
             })?,
@@ -414,7 +414,7 @@ mod exec {
         if let AssetInfo::Cw20(contract_addr) = &collateral_asset {
             message = CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: contract_addr.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                msg: to_json_binary(&Cw20ExecuteMsg::Transfer {
                     recipient: to.to_string(),
                     amount: amount_collateral,
                 })?,
@@ -451,7 +451,7 @@ mod exec {
         let config = CONFIG.load(storage)?;
         let message = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.dsc_address.into_string(),
-            msg: to_binary(&Cw20ExecuteMsg::BurnFrom {
+            msg: to_json_binary(&Cw20ExecuteMsg::BurnFrom {
                 owner: dsc_from.to_string(),
                 amount: amount_dsc_to_burn,
             })?,
@@ -589,7 +589,7 @@ mod exec {
     ) -> Result<FetchPriceResponse, ContractError> {
         let asset_price_usd = querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: oracle_address,
-            msg: to_binary(&OracleQueryMsg::FetchPrice {
+            msg: to_json_binary(&OracleQueryMsg::FetchPrice {
                 pyth_contract_addr: pyth_oracle_address,
                 price_feed_id: price_feed_id,
             })?,
