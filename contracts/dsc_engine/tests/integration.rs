@@ -42,13 +42,13 @@ const AMOUNT_COLLATERAL_OK: Uint128 = Uint128::new(2_000_000); // 2_000_000/1_00
 const AMOUNT_DSC_TO_MINT_OK: Uint128 = Uint128::new(1_000_000); // health factor = 6.8
 const DEBT_TO_COVER: Uint128 = Uint128::new(900_000);
 const LIQUIDATION_PRICE: i64 = 97_000;
-const FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(2_000_000); // Same as initial
+const FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(4_000_000); // Same as initial
 const FINAL_COLLATERAL_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(979_382); // 2_000_000/1_000_000 - (900_000/1_000_000 * 100_000/97_000) * 1.1
 const FINAL_DSC_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(100_000); // 1_000_000 - 900_000
 const FINAL_DSC_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(1_000_000); // Same as initial
 const FINAL_DSC_SUPPLY: Uint128 = Uint128::new(1_100_000); // 2_000_000 - 900_000
 const FINAL_BALANCE_OF_LIQUIDATOR: Uint128 = Uint128::new(1_020_618); // (900_000/1_000_000 * 100_000/97_000) * 1.1
-const FINAL_NATIVE_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(11_000_000); // 15_000_000 - 2_000_000 - 2_000_000
+const FINAL_NATIVE_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(9_000_000); // 15_000_000 - 4_000_000 - 2_000_000
 const FINAL_CW20_BALANCE_OF_LIQUIDATED: Uint128 = Uint128::new(13_000_000); // 15_000_000 - 2_000_000
 
 fn get_default_instantiate_msg(
@@ -1002,7 +1002,7 @@ fn proper_native_liquidation() {
         Addr::unchecked(LIQUIDATOR),
         &[Coin {
             denom: String::from(NATIVE_COLLATERAL_DENOM),
-            amount: AMOUNT_COLLATERAL_OK,
+            amount: FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR,
         }],
     );
 
@@ -1118,24 +1118,6 @@ fn proper_native_liquidation() {
         )
         .unwrap();
 
-    // 6 - execute deposit_collateral_and_mint_dsc by liquidator
-
-    let _liquidator_deposit_resp = app
-        .execute_contract(
-            Addr::unchecked(LIQUIDATOR),
-            dsce_addr.clone(),
-            &ExecuteMsg::DepositCollateralAndMintDsc {
-                collateral_asset: AssetInfo::Native(String::from(NATIVE_COLLATERAL_DENOM)),
-                amount_collateral: AMOUNT_COLLATERAL_OK,
-                amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
-            },
-            &[Coin {
-                denom: String::from(NATIVE_COLLATERAL_DENOM),
-                amount: AMOUNT_COLLATERAL_OK,
-            }],
-        )
-        .unwrap();
-
     // 6 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
 
     let _increase_allowance_resp = app
@@ -1164,7 +1146,25 @@ fn proper_native_liquidation() {
         )
         .unwrap();
 
-    // 8 - liquidate
+    // 9 - execute deposit_collateral_and_mint_dsc by liquidator
+
+    let _liquidator_deposit_resp = app
+        .execute_contract(
+            Addr::unchecked(LIQUIDATOR),
+            dsce_addr.clone(),
+            &ExecuteMsg::DepositCollateralAndMintDsc {
+                collateral_asset: AssetInfo::Native(String::from(NATIVE_COLLATERAL_DENOM)),
+                amount_collateral: FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR,
+                amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
+            },
+            &[Coin {
+                denom: String::from(NATIVE_COLLATERAL_DENOM),
+                amount: FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR,
+            }],
+        )
+        .unwrap();
+
+    // 10 - liquidate
 
     let _liquidation_resp = app
         .execute_contract(
@@ -1284,7 +1284,7 @@ fn proper_cw20_liquidation() {
             },
             Cw20Coin {
                 address: String::from(LIQUIDATOR),
-                amount: AMOUNT_COLLATERAL_OK,
+                amount: FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR,
             },
         ],
         mint: None,
@@ -1439,22 +1439,7 @@ fn proper_cw20_liquidation() {
         )
         .unwrap();
 
-    // 8 - execute deposit_collateral_and_mint_dsc by liquidator
-
-    let _liquidator_deposit_resp = app
-        .execute_contract(
-            Addr::unchecked(LIQUIDATOR),
-            dsce_addr.clone(),
-            &ExecuteMsg::DepositCollateralAndMintDsc {
-                collateral_asset: AssetInfo::Cw20(Addr::unchecked(cw20_addr.as_str())),
-                amount_collateral: AMOUNT_COLLATERAL_OK,
-                amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
-            },
-            &[],
-        )
-        .unwrap();
-
-    // 9 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
+    // 8 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
 
     let _increase_allowance_resp = app
         .execute_contract(
@@ -1469,7 +1454,7 @@ fn proper_cw20_liquidation() {
         )
         .unwrap();
 
-    // 10 - Change mock-pyth collateral price - set new lower mocked price
+    // 9 - Change mock-pyth collateral price - set new lower mocked price
 
     let _update_mock_price_resp = app
         .execute_contract(
@@ -1477,6 +1462,21 @@ fn proper_cw20_liquidation() {
             mock_pyth_price_feed_addr.clone(),
             &MockPythExecuteMsg::UpdateMockPrice {
                 price: LIQUIDATION_PRICE,
+            },
+            &[],
+        )
+        .unwrap();
+
+    // 10 - execute deposit_collateral_and_mint_dsc by liquidator
+
+    let _liquidator_deposit_resp = app
+        .execute_contract(
+            Addr::unchecked(LIQUIDATOR),
+            dsce_addr.clone(),
+            &ExecuteMsg::DepositCollateralAndMintDsc {
+                collateral_asset: AssetInfo::Cw20(Addr::unchecked(cw20_addr.as_str())),
+                amount_collateral: FINAL_COLLATERAL_BALANCE_OF_LIQUIDATOR,
+                amount_dsc_to_mint: AMOUNT_DSC_TO_MINT_OK,
             },
             &[],
         )

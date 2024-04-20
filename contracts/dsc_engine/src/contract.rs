@@ -180,7 +180,7 @@ mod exec {
         )?;
 
         // VERIFY NEW USER HEALTH FACTOR
-        revert_if_health_factor_is_broken(&deps, &info.sender);
+        revert_if_health_factor_is_broken(&deps, &info.sender)?;
 
         let res = Response::new()
             .add_messages(messages)
@@ -234,7 +234,7 @@ mod exec {
         messages.push(redeem_collateral_msg);
 
         // VERIFY NEW USER HEALTH FACTOR
-        revert_if_health_factor_is_broken(&deps, &info.sender);
+        revert_if_health_factor_is_broken(&deps, &info.sender)?;
 
         let res = Response::new()
             .add_messages(messages)
@@ -313,7 +313,7 @@ mod exec {
             return Err(ContractError::HealthFactorNotImproved {});
         }
 
-        revert_if_health_factor_is_broken(&deps, &info.sender);
+        revert_if_health_factor_is_broken(&deps, &info.sender)?;
 
         let res = Response::new()
             .add_messages(messages)
@@ -372,7 +372,7 @@ mod exec {
         )?;
         messages.push(redeem_collateral_msg);
 
-        revert_if_health_factor_is_broken(&deps, &info.sender);
+        revert_if_health_factor_is_broken(&deps, &info.sender)?;
 
         let res = Response::new()
             .add_messages(messages)
@@ -398,7 +398,7 @@ mod exec {
             &info.sender,
         )?;
         messages.push(burn_dsc_msg);
-        revert_if_health_factor_is_broken(&deps, &info.sender);
+        revert_if_health_factor_is_broken(&deps, &info.sender)?;
         let res = Response::new().add_messages(messages);
         Ok(res)
     }
