@@ -109,7 +109,7 @@ mod test {
     use {
         super::*,
         cosmwasm_std::{
-            from_binary,
+            from_json,
             testing::{mock_dependencies, mock_env, MockApi, MockQuerier, MockStorage},
             Coin, OwnedDeps, QuerierResult, SystemError, SystemResult, Timestamp, WasmQuery,
         },
@@ -197,7 +197,7 @@ mod test {
             price_feed_id: PriceIdentifier::from_hex(PRICE_FEED_ID).unwrap(),
         };
         let result = query(deps.as_ref(), env, msg)
-            .and_then(|binary| from_binary::<FetchPriceResponse>(&binary));
+            .and_then(|binary| from_json::<FetchPriceResponse>(&binary));
 
         // println!("PRICE RESULT: {:?}", result);
 
@@ -216,7 +216,7 @@ mod test {
             pyth_contract_addr: String::from(PYTH_CONTRACT_ADDR),
         };
         let result =
-            query(deps.as_ref(), env, msg).and_then(|binary| from_binary::<Duration>(&binary));
+            query(deps.as_ref(), env, msg).and_then(|binary| from_json::<Duration>(&binary));
 
         assert_eq!(result.map(|r| r.as_secs()), Ok(60));
     }

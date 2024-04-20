@@ -116,7 +116,7 @@ mod exec {
         amount_collateral: Uint128,
         amount_dsc_to_mint: Uint128,
     ) -> Result<Response, ContractError> {
-        /// CHECK IF COLLATERAL ASSET IS VALID
+        // CHECK IF COLLATERAL ASSET IS VALID
         let config = CONFIG.load(deps.storage)?;
         if !config
             .assets_to_feeds
@@ -127,7 +127,7 @@ mod exec {
             });
         }
 
-        /// TRANSFER COLLATERAL FROM USER TO CONTRACT
+        // TRANSFER COLLATERAL FROM USER TO CONTRACT
         // If the asset is a token contract, then we need to execute a TransferFrom msg to receive assets
         // If the asset is native token, the pool balance is already increased
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
@@ -159,8 +159,8 @@ mod exec {
             },
         )?;
 
-        /// MINT DSC TO USER
-        /// NOTE: DSC Engine must be declared as minter on DSC CW20 intantiation
+        // MINT DSC TO USER
+        // NOTE: DSC Engine must be declared as minter on DSC CW20 intantiation
         messages.push(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.dsc_address.into_string(),
             msg: to_json_binary(&Cw20ExecuteMsg::Mint {
@@ -179,7 +179,7 @@ mod exec {
             },
         )?;
 
-        /// VERIFY NEW USER HEALTH FACTOR
+        // VERIFY NEW USER HEALTH FACTOR
         revert_if_health_factor_is_broken(&deps, &info.sender);
 
         let res = Response::new()
@@ -212,8 +212,8 @@ mod exec {
 
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
 
-        /// BURN DSC
-        /// NOTE: DSC Engine must be declared as minter on DSC CW20 intantiation
+        // BURN DSC
+        // NOTE: DSC Engine must be declared as minter on DSC CW20 intantiation
         let burn_dsc_msg = _burn_dsc(
             deps.storage,
             &env,
@@ -223,7 +223,7 @@ mod exec {
         )?;
         messages.push(burn_dsc_msg);
 
-        /// REDEEM COLLATERAL
+        // REDEEM COLLATERAL
         let redeem_collateral_msg = _redeem_collateral(
             deps.storage,
             &collateral_asset,
@@ -233,7 +233,7 @@ mod exec {
         )?;
         messages.push(redeem_collateral_msg);
 
-        /// VERIFY NEW USER HEALTH FACTOR
+        // VERIFY NEW USER HEALTH FACTOR
         revert_if_health_factor_is_broken(&deps, &info.sender);
 
         let res = Response::new()
@@ -278,7 +278,7 @@ mod exec {
         let user_addr = &deps.api.addr_validate(&user)?;
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
 
-        /// REDEEM COLLATERAL
+        // REDEEM COLLATERAL
         let redeem_collateral_msg = _redeem_collateral(
             deps.storage,
             &collateral_asset,
@@ -288,7 +288,7 @@ mod exec {
         )?;
         messages.push(redeem_collateral_msg);
 
-        /// BURN DSC
+        // BURN DSC
         let dsc_token_decimals = 6;
         let precision_adjusted_debt_to_cover = debt_to_cover
             .checked_mul(Decimal::from_atomics(
@@ -390,7 +390,7 @@ mod exec {
         amount_dsc_to_burn: Uint128,
     ) -> Result<Response, ContractError> {
         let mut messages: std::vec::Vec<CosmosMsg<Empty>> = vec![];
-        let mut burn_dsc_msg = _burn_dsc(
+        let burn_dsc_msg = _burn_dsc(
             deps.storage,
             &env,
             amount_dsc_to_burn,

@@ -185,7 +185,7 @@ fn proper_deposit_valid_cw20_collateral_and_mint() {
         )
         .unwrap();
 
-    let price: FetchPriceResponse = app
+    let _price: FetchPriceResponse = app
         .wrap()
         .query_wasm_smart(
             oracle_addr.clone(),
@@ -251,14 +251,14 @@ fn proper_deposit_valid_cw20_collateral_and_mint() {
         )
         .unwrap();
 
-    let config_res: ConfigResponse = app
+    let _config_res: ConfigResponse = app
         .wrap()
         .query_wasm_smart(dsce_addr.clone(), &QueryMsg::Config {})
         .unwrap();
 
     // 5 - Update dsc minter to dsce
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -271,7 +271,7 @@ fn proper_deposit_valid_cw20_collateral_and_mint() {
 
     // 6 - Increase Allowance of cw20 from user to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             cw20_addr.clone(),
@@ -423,7 +423,7 @@ fn proper_deposit_valid_native_collateral_and_mint() {
         )
         .unwrap();
 
-    let price: FetchPriceResponse = app
+    let _price: FetchPriceResponse = app
         .wrap()
         .query_wasm_smart(
             oracle_addr.clone(),
@@ -473,14 +473,14 @@ fn proper_deposit_valid_native_collateral_and_mint() {
         )
         .unwrap();
 
-    let config_res: ConfigResponse = app
+    let _config_res: ConfigResponse = app
         .wrap()
         .query_wasm_smart(dsce_addr.clone(), &QueryMsg::Config {})
         .unwrap();
 
     // 4 - Update dsc minter to dsce
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -504,7 +504,7 @@ fn proper_deposit_valid_native_collateral_and_mint() {
         )
         .unwrap();
 
-    let resp = app
+    let _resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -647,7 +647,7 @@ fn proper_redeem_valid_cw20_collateral_and_burn_dsc() {
 
     // 5 - Update dsc minter to dsce
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -660,7 +660,7 @@ fn proper_redeem_valid_cw20_collateral_and_burn_dsc() {
 
     // 6 - Increase Allowance of cw20 from user to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             cw20_addr.clone(),
@@ -675,7 +675,7 @@ fn proper_redeem_valid_cw20_collateral_and_burn_dsc() {
 
     // 7 - execute deposit_collateral_and_mint_dsc
 
-    let deposit_resp = app
+    let _deposit_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -690,7 +690,7 @@ fn proper_redeem_valid_cw20_collateral_and_burn_dsc() {
 
     // 8 - Increase Allowance of dsc (cw20) from user to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -882,7 +882,7 @@ fn proper_redeem_valid_native_collateral_and_burn_dsc() {
 
     // 4 - Update dsc minter to dsce
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -895,7 +895,7 @@ fn proper_redeem_valid_native_collateral_and_burn_dsc() {
 
     // 5 - execute deposit_collateral_and_mint_dsc
 
-    let deposit_resp = app
+    let _deposit_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -924,7 +924,7 @@ fn proper_redeem_valid_native_collateral_and_burn_dsc() {
 
     // 6 - Increase Allowance of dsc (cw20) from user to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -939,7 +939,7 @@ fn proper_redeem_valid_native_collateral_and_burn_dsc() {
 
     // 7 - execute redeem_collateral_and_burn_dsc
 
-    let resp = app
+    let _resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -997,7 +997,7 @@ fn proper_native_liquidation() {
             .unwrap()
     });
 
-    let send_msg = app.send_tokens(
+    let _send_msg = app.send_tokens(
         Addr::unchecked(OWNER),
         Addr::unchecked(LIQUIDATOR),
         &[Coin {
@@ -1078,7 +1078,7 @@ fn proper_native_liquidation() {
 
     // 4 - Update dsc minter to dsce
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -1091,7 +1091,7 @@ fn proper_native_liquidation() {
 
     // 5 - execute deposit_collateral_and_mint_dsc by user that will be liquidated
 
-    let deposit_resp = app
+    let _deposit_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -1107,7 +1107,7 @@ fn proper_native_liquidation() {
         )
         .unwrap();
 
-    let initial_deposited_owner_native_balance: Uint128 = app
+    let _initial_deposited_owner_native_balance: Uint128 = app
         .wrap()
         .query_wasm_smart(
             dsce_addr.clone(),
@@ -1120,7 +1120,7 @@ fn proper_native_liquidation() {
 
     // 6 - execute deposit_collateral_and_mint_dsc by liquidator
 
-    let liquidator_deposit_resp = app
+    let _liquidator_deposit_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsce_addr.clone(),
@@ -1138,7 +1138,7 @@ fn proper_native_liquidation() {
 
     // 6 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsc_addr.clone(),
@@ -1153,7 +1153,7 @@ fn proper_native_liquidation() {
 
     // 7 - Change mock-pyth collateral price - set new lower mocked price
 
-    let update_mock_price_resp = app
+    let _update_mock_price_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             mock_pyth_price_feed_addr.clone(),
@@ -1166,7 +1166,7 @@ fn proper_native_liquidation() {
 
     // 8 - liquidate
 
-    let liquidation_resp = app
+    let _liquidation_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsce_addr.clone(),
@@ -1374,7 +1374,7 @@ fn proper_cw20_liquidation() {
 
     // 5 - Update DSC minter to DSCE
 
-    let update_dsc_minter_resp = app
+    let _update_dsc_minter_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsc_addr.clone(),
@@ -1387,7 +1387,7 @@ fn proper_cw20_liquidation() {
 
     // 6 - Increase Allowance of cw20 from users (owner + liquidator) to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             cw20_addr.clone(),
@@ -1400,7 +1400,7 @@ fn proper_cw20_liquidation() {
         )
         .unwrap();
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             cw20_addr.clone(),
@@ -1415,7 +1415,7 @@ fn proper_cw20_liquidation() {
 
     // 7 - execute deposit_collateral_and_mint_dsc by user that will be liquidated
 
-    let deposit_resp = app
+    let _deposit_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             dsce_addr.clone(),
@@ -1428,7 +1428,7 @@ fn proper_cw20_liquidation() {
         )
         .unwrap();
 
-    let initial_deposited_owner_cw20_balance: Uint128 = app
+    let _initial_deposited_owner_cw20_balance: Uint128 = app
         .wrap()
         .query_wasm_smart(
             dsce_addr.clone(),
@@ -1441,7 +1441,7 @@ fn proper_cw20_liquidation() {
 
     // 8 - execute deposit_collateral_and_mint_dsc by liquidator
 
-    let liquidator_deposit_resp = app
+    let _liquidator_deposit_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsce_addr.clone(),
@@ -1456,7 +1456,7 @@ fn proper_cw20_liquidation() {
 
     // 9 - Increase Allowance of dsc (cw20) from liquidator to dsce contract
 
-    let increase_allowance_resp = app
+    let _increase_allowance_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsc_addr.clone(),
@@ -1471,7 +1471,7 @@ fn proper_cw20_liquidation() {
 
     // 10 - Change mock-pyth collateral price - set new lower mocked price
 
-    let update_mock_price_resp = app
+    let _update_mock_price_resp = app
         .execute_contract(
             Addr::unchecked(OWNER),
             mock_pyth_price_feed_addr.clone(),
@@ -1484,7 +1484,7 @@ fn proper_cw20_liquidation() {
 
     // 11 - liquidate
 
-    let liquidation_resp = app
+    let _liquidation_resp = app
         .execute_contract(
             Addr::unchecked(LIQUIDATOR),
             dsce_addr.clone(),
