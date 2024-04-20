@@ -3,7 +3,7 @@ use cosmwasm_std::entry_point;
 use {
     crate::msg::{ExecuteMsg, FetchPriceResponse, InstantiateMsg, MigrateMsg, QueryMsg},
     cosmwasm_std::{
-        to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+        to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
     },
     pyth_sdk_cw::{get_valid_time_period, query_price_feed, PriceFeedResponse, PriceIdentifier},
     std::time::Duration,
@@ -42,14 +42,14 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::FetchPrice {
             pyth_contract_addr,
             price_feed_id,
-        } => to_binary(&query_fetch_price(
+        } => to_json_binary(&query_fetch_price(
             deps,
             env,
             pyth_contract_addr,
             price_feed_id,
         )?),
         QueryMsg::FetchValidTimePeriod { pyth_contract_addr } => {
-            to_binary(&query_fetch_valid_time_period(deps, pyth_contract_addr)?)
+            to_json_binary(&query_fetch_valid_time_period(deps, pyth_contract_addr)?)
         }
     }
 }

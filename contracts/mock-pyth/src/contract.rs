@@ -2,7 +2,8 @@ use crate::error::ContractError;
 use crate::msg::ExecuteMsg;
 use crate::state::PRICE;
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult,
+    entry_point, to_json_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response,
+    StdResult,
 };
 use pyth_sdk_cw::{Price, PriceFeed, PriceFeedResponse, PriceIdentifier, QueryMsg};
 
@@ -31,7 +32,7 @@ pub fn execute(
 #[entry_point]
 pub fn query(deps: Deps, _: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::PriceFeed { id } => to_binary(&mocked_price_feed(deps, id)?),
+        QueryMsg::PriceFeed { id } => to_json_binary(&mocked_price_feed(deps, id)?),
         _ => panic!("Unsupported query!"),
     }
 }
