@@ -12,7 +12,7 @@ async function run() {
     console.log(deploy_response);
     const contract_info = await stable_cw20_contract.instantiate({
         "name": "Decentralized Stablecoin",
-        "symbol": "STABLE",
+        "symbol": "DSC",
         "decimals": 6,
         "initial_balances": [
             {

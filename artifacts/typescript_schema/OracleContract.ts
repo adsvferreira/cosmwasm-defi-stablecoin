@@ -57,3 +57,10 @@ export class OracleQueryContract extends Contract implements OracleReadOnlyInter
     });
   };
 }
+
+
+export class OracleContract extends OracleQueryContract implements OracleReadOnlyInterface {
+  constructor(instantiateTag?: string) {
+    super("oracle", instantiateTag);
+  };
+}
