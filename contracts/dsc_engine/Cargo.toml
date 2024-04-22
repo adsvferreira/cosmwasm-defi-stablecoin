@@ -25,12 +25,12 @@ cw-asset = "3.0.0"
 thiserror = "1.0.31"
 cosmwasm-schema = "1.1.5"
 dsc = { path = "../dsc", version = "1.0.0" }
-oracle = { path = "../oracle", version = "1.0.0" }
+oracle = { path = "../oracle", version = "1.0.0", features = ["library"]}
 pyth-sdk-cw = "1.2.0"
 hex = "0.4.3"
 
 [dev-dependencies]
 cw-multi-test = "0.13.4"
-mock-pyth = { path = "../mock-pyth", version = "1.0.0" }
+mock-pyth = { path = "../mock-pyth", version = "1.0.0", features = ["library"]}
 
 

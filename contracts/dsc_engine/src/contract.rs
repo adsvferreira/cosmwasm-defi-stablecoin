@@ -1,9 +1,9 @@
+#[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_json_binary, Addr, BankMsg, Coin, CosmosMsg, Decimal, DepsMut, Empty, Env, MessageInfo,
     QuerierWrapper, QueryRequest, Response, StdResult, Uint128, WasmMsg, WasmQuery,
 };
-#[cfg(not(feature = "library"))]
 use cw2::set_contract_version;
 use cw20::Cw20ExecuteMsg;
 use cw_asset::AssetInfo;

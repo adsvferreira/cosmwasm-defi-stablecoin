@@ -1,0 +1,1 @@
+/Users/andreferreira/dev/cosmwasm-defi-stablecoin/target/wasm32-unknown-unknown/release/dsc.wasm: /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/dsc/src/contract.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/dsc/src/lib.rs

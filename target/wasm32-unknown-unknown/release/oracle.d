@@ -1,0 +1,1 @@
+/Users/andreferreira/dev/cosmwasm-defi-stablecoin/target/wasm32-unknown-unknown/release/oracle.wasm: /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/contract.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/lib.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/msg.rs
