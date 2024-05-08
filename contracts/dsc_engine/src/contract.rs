@@ -34,7 +34,7 @@ pub fn instantiate(
         .assets
         .clone()
         .into_iter()
-        .map(|asset| asset.to_string())
+        .map(|asset| asset.inner())
         .zip(msg.price_feed_ids.into_iter())
         .collect();
 
@@ -120,7 +120,7 @@ mod exec {
         let config = CONFIG.load(deps.storage)?;
         if !config
             .assets_to_feeds
-            .contains_key(&collateral_asset.to_string())
+            .contains_key(&collateral_asset.inner())
         {
             return Err(ContractError::InvalidCollateralAsset {
                 denom: collateral_asset.inner(),
@@ -142,7 +142,8 @@ mod exec {
                 funds: vec![],
             }));
         } else {
-            if info.funds[0].denom != collateral_asset.inner()
+            if info.funds.len() == 0
+                || info.funds[0].denom != collateral_asset.inner()
                 || info.funds[0].amount != amount_collateral
             {
                 return Err(ContractError::MissingNativeFunds {
@@ -188,7 +189,6 @@ mod exec {
             .add_attribute("from", info.sender)
             .add_attribute("asset", collateral_asset.inner())
             .add_attribute("amount", amount_collateral);
-
         Ok(res)
     }
 
@@ -203,7 +203,7 @@ mod exec {
         let config = CONFIG.load(deps.storage)?;
         if !config
             .assets_to_feeds
-            .contains_key(&collateral_asset.to_string())
+            .contains_key(&collateral_asset.inner())
         {
             return Err(ContractError::InvalidCollateralAsset {
                 denom: collateral_asset.inner(),
@@ -263,7 +263,7 @@ mod exec {
             return Err(ContractError::HealthFactorOk {});
         }
         let token_amount_from_debt_covered =
-            _get_token_amount_from_usd(&deps, collateral_asset.to_string(), debt_to_cover)?;
+            _get_token_amount_from_usd(&deps, collateral_asset.inner(), debt_to_cover)?;
         let bonus_collateral = token_amount_from_debt_covered * decimal_liquidation_bonus_precision;
         let collateral_to_redeem = token_amount_from_debt_covered + bonus_collateral;
         let precision_adjusted_collateral_to_redeem = collateral_to_redeem
@@ -565,7 +565,7 @@ mod exec {
     ) -> Result<Decimal, ContractError> {
         let amount_decimals: u32 = 6;
         let config = CONFIG.load(deps.storage)?;
-        let asset_denom = asset.to_string();
+        let asset_denom = asset.inner();
         let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
         let oracle_res = query_price_from_oracle(
             &deps.querier,

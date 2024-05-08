@@ -1505,6 +1505,11 @@
             "type": "unknown"
           }
         ]
+      },
+      {
+        "kind": "class",
+        "name": "OracleContract",
+        "properties": []
       }
     ]
   }

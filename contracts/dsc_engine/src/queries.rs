@@ -122,7 +122,7 @@ pub fn calculate_health_factor(
 pub fn get_usd_value(deps: &Deps, asset: &AssetInfo, amount: Uint128) -> StdResult<Decimal> {
     let amount_decimals: u32 = 6;
     let config = CONFIG.load(deps.storage)?;
-    let asset_denom = asset.to_string();
+    let asset_denom = asset.inner();
     let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
     let oracle_res = query_price_from_oracle(
         &deps.querier,

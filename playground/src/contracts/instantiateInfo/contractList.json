@@ -1,23 +1,23 @@
 {
-  "decentralized_stablecoin": {
+  "dsc": {
     "localnet": {
       "chainId": "testing-1",
-      "codeId": 20,
-      "contractAddress": "neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj"
+      "codeId": 19,
+      "contractAddress": "neutron1nxshmmwrvxa2cp80nwvf03t8u5kvl2ttr8m8f43vamudsqrdvs8qqvfwpj"
     }
   },
   "dsc_engine": {
     "localnet": {
       "chainId": "testing-1",
-      "codeId": 22,
-      "contractAddress": "neutron1nhay73rdztlwwxnspup3y4uld59ylaumhddjt80eqmd0xl5e7mfqx0rnr3"
+      "codeId": 21,
+      "contractAddress": "neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg"
     }
   },
   "oracle": {
     "localnet": {
       "chainId": "testing-1",
-      "codeId": 21,
-      "contractAddress": "neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg"
+      "codeId": 20,
+      "contractAddress": "neutron1nyuryl5u5z04dx4zsqgvsuw7fe8gl2f77yufynauuhklnnmnjncqcls0tj"
     }
   }
 }

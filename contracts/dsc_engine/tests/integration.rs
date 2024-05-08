@@ -140,7 +140,7 @@ fn proper_instantiation() {
     let assets_to_feeds: HashMap<String, String> = config_input
         .assets
         .into_iter()
-        .map(|asset| asset.to_string())
+        .map(|asset| asset.inner())
         .zip(config_input.price_feed_ids.into_iter())
         .collect();
 
