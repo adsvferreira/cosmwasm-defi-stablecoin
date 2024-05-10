@@ -113,7 +113,7 @@ pub enum QueryMsg {
     },
     #[returns(Decimal)]
     GetUsdValue { token: String, amount: Uint128 },
-    #[returns(Uint128)]
+    #[returns(Decimal)]
     GetTokenAmountFromUsd { token: String, usd_amount: Decimal },
     #[returns(String)]
     GetCollateralTokenPriceFeed { collateral_asset: String },

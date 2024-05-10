@@ -82,31 +82,46 @@ async function run() {
     undefined, // customFees, // custom fess here
     contract_owner.account.address);
     console.log("DSC ENGINE INSTANTIATE RES:");
-    console.log(dsc_info);
+    console.log(dsce_info);
     console.log();
     const dsce_address = dsce_info.contractAddress;
     console.log("DSCE ADDR:");
     console.log(dsce_address);
     console.log();
-    // 4 - Update DSC minter to DSCE
-    const update_minter_res = await stable_cw20_contract.updateMinter({ account: contract_owner }, { newMinter: dsce_address });
-    console.log("UPDATE MINTER RES:");
-    console.log(update_minter_res);
-    console.log();
+    // // 4 - Update DSC minter to DSCE
+    // const update_minter_res = await stable_cw20_contract.updateMinter(
+    //   {account: contract_owner}, 
+    //   {newMinter: dsce_address}
+    // )
+    // console.log("UPDATE MINTER RES:");
+    // console.log(update_minter_res);
+    // console.log();
     // 5 - increase allowance of cw20 from user to dsce contract
-    const increase_allowance_res = await stable_cw20_contract.increaseAllowance({ account: contract_owner }, { spender: dsce_address, amount: "3000000", expires: null });
-    console.log("INCREASE ALLOWANCE RES:");
-    console.log(increase_allowance_res);
-    console.log();
-    // 6 - execute deposit_collateral_and_mint_dsc
-    const deposit_collateral_and_mint_dsc_res = await dsce_contract.depositCollateralAndMintDsc({ account: contract_owner, transferAmount: [{ denom: native_ntrn_denom, amount: "2000000" }] }, {
-        collateralAsset: { native: native_ntrn_denom },
-        amountCollateral: "2000000",
-        amountDscToMint: "1000000"
-    });
-    console.log("DEPOSIT AND MINT RES:");
-    console.log(deposit_collateral_and_mint_dsc_res);
-    console.log();
+    // const increase_allowance_res = await stable_cw20_contract.increaseAllowance(
+    //   {account: contract_owner}, 
+    //   {spender: dsce_address, amount: "3000000", expires: null}
+    // )
+    // console.log("INCREASE ALLOWANCE RES:");
+    // console.log(increase_allowance_res);
+    // console.log();  
+    // // 6 - execute deposit_collateral_and_mint_dsc
+    // const deposit_collateral_and_mint_dsc_res = await dsce_contract.depositCollateralAndMintDsc(
+    //   {account: contract_owner, transferAmount:[{denom:native_ntrn_denom, amount: "2000000"}]}, 
+    //   {
+    //     collateralAsset: {native : native_ntrn_denom},
+    //     amountCollateral: "2000000",
+    //     amountDscToMint: "100000"
+    //   }
+    // )
+    // console.log("DEPOSIT AND MINT RES:");
+    // console.log(deposit_collateral_and_mint_dsc_res);
+    // console.log();
+    const usd_value = await dsce_contract.getUsdValue({ amount: "1000000", token: "untrn" });
+    console.log("USD VALUE");
+    console.log(usd_value);
+    const token_amount = await dsce_contract.getTokenAmountFromUsd({ token: "untrn", usdAmount: "1000000" });
+    console.log("TOKEN AMOUNT");
+    console.log(token_amount);
 }
 exports.default = run;
 //# sourceMappingURL=deploy_and_test.js.map

@@ -163,7 +163,7 @@ export default async function run () {
     {
       collateralAsset: {native : native_ntrn_denom},
       amountCollateral: "2000000",
-      amountDscToMint: "1000000"
+      amountDscToMint: "100000"
     }
   )
 
@@ -171,5 +171,5 @@ export default async function run () {
   console.log(deposit_collateral_and_mint_dsc_res);
   console.log();
 
- }
+}
 

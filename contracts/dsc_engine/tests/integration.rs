@@ -134,7 +134,7 @@ fn proper_instantiation() {
 
     let config_res: ConfigResponse = app
         .wrap()
-        .query_wasm_smart(addr, &QueryMsg::Config {})
+        .query_wasm_smart(addr.clone(), &QueryMsg::Config {})
         .unwrap();
 
     let assets_to_feeds: HashMap<String, String> = config_input

@@ -40,17 +40,11 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             total_dsc_minted,
             collateral_value_usd,
         )?),
-        QueryMsg::GetUsdValue { token, amount } => to_json_binary(&get_usd_value(
-            &deps,
-            &AssetInfo::Cw20(Addr::unchecked(token)),
-            amount,
-        )?),
+        QueryMsg::GetUsdValue { token, amount } => {
+            to_json_binary(&get_usd_value(&deps, token, amount)?)
+        }
         QueryMsg::GetTokenAmountFromUsd { token, usd_amount } => {
-            to_json_binary(&get_token_amount_from_usd(
-                &deps,
-                AssetInfo::Cw20(Addr::unchecked(token)).to_string(),
-                usd_amount,
-            )?)
+            to_json_binary(&get_token_amount_from_usd(&deps, token, usd_amount)?)
         }
         QueryMsg::GetCollateralTokenPriceFeed { collateral_asset } => {
             to_json_binary(&get_collateral_token_price_feed(&deps, collateral_asset)?)
@@ -119,10 +113,9 @@ pub fn calculate_health_factor(
     }
 }
 
-pub fn get_usd_value(deps: &Deps, asset: &AssetInfo, amount: Uint128) -> StdResult<Decimal> {
+pub fn get_usd_value(deps: &Deps, asset_denom: String, amount: Uint128) -> StdResult<Decimal> {
     let amount_decimals: u32 = 6;
     let config = CONFIG.load(deps.storage)?;
-    let asset_denom = asset.inner();
     let price_feed_id = config.assets_to_feeds.get(&asset_denom).unwrap();
     let oracle_res = query_price_from_oracle(
         &deps.querier,
@@ -198,7 +191,7 @@ fn get_account_collateral_value(deps: &Deps, user_addr: String) -> StdResult<Dec
             ),
         )?;
         let user_collateral_balance_usd: Decimal = match user_collateral_balance {
-            Some(balance) => get_usd_value(&deps, &collateral_asset, balance)?,
+            Some(balance) => get_usd_value(&deps, collateral_asset.inner(), balance)?,
             None => Decimal::new(Uint128::zero()),
         };
         user_deposited_balance_usd += user_collateral_balance_usd;

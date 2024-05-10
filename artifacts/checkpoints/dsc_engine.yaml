@@ -1,9 +1,9 @@
-mainnet:
+localnet:
   deployInfo:
-    codeId: 1188
+    codeId: 21
     contractCodeHash: not_required
-    deployTimestamp: Wed May 08 2024 08:36:43 GMT+0100 (Western European Summer Time)
+    deployTimestamp: Fri May 10 2024 07:59:40 GMT+0100 (Western European Summer Time)
   instantiateInfo:
     - instantiateTag: default_instantiate
-      contractAddress: neutron1x2c2k0a278gpduf8c2svyg8n8xs3twvkzky3703vzh780d8hqdqq6zmvrn
-      instantiateTimestamp: Wed May 08 2024 08:36:43 GMT+0100 (Western European Summer Time)
+      contractAddress: neutron1jarq7kgdyd7dcfu2ezeqvg4w4hqdt3m5lv364d8mztnp9pzmwwwqjw7fvg
+      instantiateTimestamp: Fri May 10 2024 07:59:40 GMT+0100 (Western European Summer Time)
