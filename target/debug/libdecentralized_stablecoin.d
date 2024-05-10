@@ -1,1 +1,0 @@
-/Users/andreferreira/dev/cosmwasm-defi-stablecoin/target/debug/libdecentralized_stablecoin.dylib: /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/decentralized_stablecoin/src/contract.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/decentralized_stablecoin/src/lib.rs

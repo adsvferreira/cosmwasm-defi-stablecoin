@@ -1,1 +1,0 @@
-/Users/andreferreira/dev/cosmwasm-defi-stablecoin/target/debug/liboracle.dylib: /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/contract.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/lib.rs /Users/andreferreira/dev/cosmwasm-defi-stablecoin/contracts/oracle/src/msg.rs
