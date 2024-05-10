@@ -25,13 +25,7 @@ const neutron_localnet_accounts = [
   }
 ];
 
-const neutron_mainnet_accounts = [
-  {
-    name: 'account_0',
-    address: 'neutron17ykn47jnxnn83ceh95grafvtjx7xzsstw0jq9d',
-    mnemonic: 'hybrid squeeze grain bronze genre idle found kick stick basket cotton month obey wrestle increase asset situate subway minute present welcome gown hunt february'
-  },
-];
+const neutron_mainnet_accounts = [];
 
 const networks = {
   neutron_localnet: {
