@@ -30,7 +30,7 @@ The core of the Decentralized Stablecoin system.
 <br>
 Handles all the logic for minting and redeeming DSC, as well as depositing and withdrawing collateral.
 <br>
-This contract is based on the MakerDAO DSS system
+This contract is based on the MakerDAO DSS system.
 
 ```bash
 neutron1x2c2k0a278gpduf8c2svyg8n8xs3twvkzky3703vzh780d8hqdqq6zmvrn
